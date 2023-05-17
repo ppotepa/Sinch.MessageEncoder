@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Sinch.MessageEncoder\Sinch.MessageEncoder.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="testbinaries\bytes.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

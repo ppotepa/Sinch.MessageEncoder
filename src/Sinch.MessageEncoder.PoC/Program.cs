@@ -40,12 +40,7 @@ namespace Sinch.MessageEncoder.PoC
             MyTestMessage testMessage = default;
             fixed (byte* ptrPayload = payload, ptrHeader = headerInfo)
             {
-                testMessage = new MyTestMessage
-                {
-                    hours = 1,
-                    minutes = 2
-                };
-
+                testMessage = new MyTestMessage();
                 Marshal.Copy(payload, 0, new IntPtr(testMessage.payload), 24);
                 Marshal.Copy(headerInfo, 0, new IntPtr(testMessage.headerInfo), 25);
             }
@@ -58,32 +53,47 @@ namespace Sinch.MessageEncoder.PoC
                 *typed = testMessage;
             }
 
-            File.WriteAllBytes("test_bytes.bin", transportBytes);
-            Console.WriteLine(BitConverter.ToString(transportBytes));
+            var bytes = File.ReadAllBytes("testbinaries\\bytes.bin");
+            var obj = Deserialize<MyTestMessage>(bytes);
+            //Console.WriteLine(BitConverter.ToString(transportBytes));
         }
 
         [StructLayout(LayoutKind.Explicit)]
         public unsafe struct MyTestMessage
         {
-            [FieldOffset(1)]
+            [FieldOffset(0)]
+            [MarshalAs(UnmanagedType.I1)]
             public byte minutes;
 
-            [FieldOffset(2)]
+            [FieldOffset(1)]
+            [MarshalAs(UnmanagedType.I1)]
             public byte hours;
 
-            [FieldOffset(3)]
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 63 * 2)]
-            public fixed byte headerInfo[63 * 2];
+            [FieldOffset(2)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64 * 50)]
+            public fixed byte headerInfo[64 * 50];
 
-            [FieldOffset(28)]
+            [FieldOffset(3202)]
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
             public fixed byte payload[24];
 
             public MyTestMessage()
             {
                 minutes = (byte)DateTime.Now.Minute;
-                hours = (byte)DateTime.Now.Second;
+                hours = (byte)DateTime.Now.Hour;
             }
+        }
+
+        public static unsafe T Deserialize<T>(byte[] buffer) where T : unmanaged
+        {
+            T result = new T();
+
+            fixed (byte* bufferPtr = buffer)
+            {
+                Buffer.MemoryCopy(bufferPtr, &result, sizeof(T), sizeof(T));
+            }
+
+            return result;
         }
     }
 }
