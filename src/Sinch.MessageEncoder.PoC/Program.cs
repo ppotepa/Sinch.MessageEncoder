@@ -1,99 +1,52 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using Sinch.MessageEncoder.Messages;
+using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.IO.Compression;
+using Sinch.MessageEncoder.Messages.Default;
 
 namespace Sinch.MessageEncoder.PoC
 {
     internal class Program
     {
-        #region unused_for_now
-        //1024x1024
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public enum MSG_HEADER_TYPE
+        static void Main(string[] args)
         {
-            CONTENT_HEADER_TYPE = 1,
-            MSG_SIZE = 2,
-            TIMESTAMP = 3,
-            CONTAINS_IMAGES = 4
-        }
-        #endregion 
+            long iter = 0;
 
-        static unsafe void Main(string[] args)
-        {
-            byte[] headerInfo = {
-                0x4d, 0x53, 0x47, 0x5f, 0x4c, 0x45,
-                0x4e, 0x3a, 0x3a, 0x31, 0x0a, 0x4d,
-                0x53, 0x47, 0x5f, 0x54, 0x59, 0x50,
-                0x45, 0x3a, 0x3a, 0x54, 0x45, 0x58,
-                0x54
-            };
-
-            byte[] payload =
+            using MemoryStream inMemoryCopy = new MemoryStream();
+            using (FileStream fileStream = File.OpenRead("testbinaries\\deflate.zlib"))
             {
-                101, 102, 103, 104, 105, 106, 107, 108,
-                101, 102, 103, 104, 105, 106, 107, 108,
-                101, 102, 103, 104, 105, 106, 107, 108,
-                101, 102, 103, 104, 105, 106, 107, 108
-            };
-
-            MyTestMessage testMessage = default;
-            fixed (byte* ptrPayload = payload, ptrHeader = headerInfo)
-            {
-                testMessage = new MyTestMessage();
-                Marshal.Copy(payload, 0, new IntPtr(testMessage.payload), 24);
-                Marshal.Copy(headerInfo, 0, new IntPtr(testMessage.headerInfo), 25);
+                using DeflateStream decompressor = new DeflateStream(fileStream, CompressionMode.Decompress);
+                decompressor.CopyTo(inMemoryCopy);
+                inMemoryCopy.Position = 0;
             }
 
-            byte[] transportBytes = new byte[sizeof(MyTestMessage)];
-            
-            fixed (byte* p = transportBytes)
+            var span = new Span<byte>(new byte[inMemoryCopy.Length]);
+            _ = inMemoryCopy.Read(span);
+
+            while (iter++ != -1)
             {
-                var typed = (MyTestMessage*)p;
-                *typed = testMessage;
-            }
+                var messageTransport = MessageTransport.FromSpan(span);
+                var message = MessageFactory(messageTransport);
 
-            var bytes = File.ReadAllBytes("testbinaries\\bytes.bin");
-            var obj = Deserialize<MyTestMessage>(bytes);
-            //Console.WriteLine(BitConverter.ToString(transportBytes));
-        }
+                var a = message.Payload;
+                var payload = ((Message)message).Payload;
 
-        [StructLayout(LayoutKind.Explicit)]
-        public unsafe struct MyTestMessage
-        {
-            [FieldOffset(0)]
-            [MarshalAs(UnmanagedType.I1)]
-            public byte minutes;
-
-            [FieldOffset(1)]
-            [MarshalAs(UnmanagedType.I1)]
-            public byte hours;
-
-            [FieldOffset(2)]
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64 * 50)]
-            public fixed byte headerInfo[64 * 50];
-
-            [FieldOffset(3202)]
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
-            public fixed byte payload[24];
-
-            public MyTestMessage()
-            {
-                minutes = (byte)DateTime.Now.Minute;
-                hours = (byte)DateTime.Now.Hour;
+                if (iter % 100000000 is 0)
+                {
+                    Console.WriteLine(iter);
+                }
             }
         }
 
-        public static unsafe T Deserialize<T>(byte[] buffer) where T : unmanaged
-        {
-            T result = new T();
-
-            fixed (byte* bufferPtr = buffer)
+        static Message MessageFactory(MessageTransport messageTransport)
+        { 
+            switch (messageTransport.HeaderTransportInfo.MSG_TYPE)
             {
-                Buffer.MemoryCopy(bufferPtr, &result, sizeof(T), sizeof(T));
+                case 1: return new DefaultTextMessage(messageTransport.HeaderTransportInfo, messageTransport.BinaryPayload);
             }
 
-            return result;
+            return default;
         }
     }
 }
+

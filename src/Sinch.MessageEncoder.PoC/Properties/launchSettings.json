@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Sinch.MessageEncoder.PoC": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

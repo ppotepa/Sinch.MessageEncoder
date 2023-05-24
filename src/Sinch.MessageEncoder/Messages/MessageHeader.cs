@@ -1,27 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Sinch.MessageEncoder.Messages;
 
-[StructLayout(LayoutKind.Explicit, Size = 66_193_471)]
-public struct MessageHeader
+public class MessageHeader
 {
-    [FieldOffset(0)]
     private sbyte _headerCount;
-
-    public sbyte HeaderCount
-    {
-        get
-        {
-            _headerCount = (sbyte)HeaderMap.Count;
-            return _headerCount;
-        }
-    }
-
-    [FieldOffset(3)]
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1023)]
 
     Dictionary<string, string> HeaderMap = default;
 
@@ -31,6 +16,14 @@ public struct MessageHeader
         _headerCount = 0;
     }
 
+    public sbyte HeaderCount
+    {
+        get
+        {
+            _headerCount = (sbyte)HeaderMap.Count;
+            return _headerCount;
+        }
+    }
     public string this[string key]
     {
         get => HeaderMap[key];
