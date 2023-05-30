@@ -31,11 +31,11 @@ namespace Sinch.MessageEncoder.PoC
             var res = 24 + (2 + 1) + (2 + 1) + (2 + 1) + 2 + 3;
 
             byte[] binaryObject = new BinaryMessageBuilder(1, 2, 1685193094, 1, 24 + (2 + 1) + (2 + 1) + (2 + 1) + 2 + 3)
-                .AddHeader("test-header", (byte)1)
+                .AddHeader("test-header", (byte)254)  
                 .AddHeader("test-header2", (byte)100)
-                .AddHeader("test-header3", (byte)100)
-                .AddHeader("test-header5", "123")
-                .AddPayload(new DefaultTextMessagePayload{Name = "John", Surname = "Doe", Text = "This is my text."})
+                .AddHeader("test-header3", (byte)50)
+                .AddHeader("test-header5", "Test String Header")
+                .AddPayload(new DefaultTextMessagePayload{Name = "John" })
                 .Serialize();
 
             //.AddPayload(new { Filename = "movie.mp4", Length = 12, Payload = new byte[]{ 01, 10, 225, 25} })

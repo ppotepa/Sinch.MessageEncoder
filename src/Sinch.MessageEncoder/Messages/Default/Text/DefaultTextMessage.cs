@@ -10,9 +10,7 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
         {
             Payload = new DefaultTextMessagePayload
             {
-                Name = System.Text.Encoding.Default.GetString(payloadSpan[..24]),
-                Surname = System.Text.Encoding.Default.GetString(payloadSpan[24..48]),
-                Text = System.Text.Encoding.Default.GetString(payloadSpan[48..72]),
+                Name = System.Text.Encoding.Default.GetString(payloadSpan[2.. payloadSpan.Length]),
             };
         }
 
@@ -27,13 +25,8 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
 
         public override object Serialize()
         {
-            return new[] {
-                new[]{(byte)Name.Length}.Concat(Name.ToByteArray()),
-                new[]{(byte)Surname.Length}.Concat(Surname.ToByteArray()),
-                new[]{(byte)Text.Length}.Concat(Text.ToByteArray()),
-            }
-            .SelectMany(bytes => bytes)
-            .ToArray();
+            byte[] nameBytes = Name.ToByteArray();
+            return ((short)nameBytes.Length).ToByteArray().Concat(nameBytes).ToArray();
         }
     }
 }

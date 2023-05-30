@@ -1,57 +1,77 @@
-﻿namespace Sinch.MessageEncoder.Extensions
+﻿using System;
+
+namespace Sinch.MessageEncoder.Extensions
 {
     public static class ObjectExtensions
     {
-        public static byte[] ToByteArray(this object @object)
+        public static byte[] ToByteArray(this int @object)
         {
-            switch (@object)
+            byte[] bytes = new[]
             {
-                case long @long:
-                {
-                    byte[] bytes = new[]
-                    {
-                        (byte)@long,
-                        (byte)(@long >> 8),
-                        (byte)(@long >> 16),
-                        (byte)(@long >> 24),
-                        (byte)(@long >> 32),
-                        (byte)(@long >> 40),
-                        (byte)(@long >> 48),
-                        (byte)(@long >> 54)
-                    };
-                    return bytes;
-                }
-                case int @int:
-                {
-                    byte[] bytes = new[]
-                    {
-                        (byte)@int,
-                        (byte)(@int >> 8),
-                        (byte)(@int >> 16),
-                        (byte)(@int >> 24)
-                    };
+                (byte)@object,
+                (byte)(@object >> 8),
+                (byte)(@object >> 16),
+                (byte)(@object >> 24)
+            };
 
-                    return bytes;
-                }
-                case short @short:
-                {
-                    byte[] bytes = new[]
-                    {
-                        (byte)@short,
-                        (byte)(@short >> 8),
-                    };
-                    return bytes;
-                }
-                case byte @byte:  return new[]{@byte}; 
-                case string @string:
-                {
-                    byte[] bytes = new byte[@string.Length];
-                    for (int index = 0; index < @string.Length; bytes[index] = (byte)@string[index++]) { };
-                    return bytes;
-                }
-                default: return default;
-            }
+            return bytes;
         }
+
+        public static byte[] ToByteArray(this short @object)
+        {
+            byte[] bytes = new[]
+            {
+                (byte)@object,
+                (byte)(@object >> 8)
+            };
+
+            return bytes;
+        }
+
+        public static byte[] ToByteArray(this byte @object)
+        {
+            byte[] bytes = new[]
+            {
+                (byte)@object,
+            };
+
+            return bytes;
+        }
+
+        public static byte[] ToByteArray(this long @object)
+        {
+            byte[] bytes = new[]
+            {
+                (byte)@object,
+                (byte)(@object >> 8),
+                (byte)(@object >> 16),
+                (byte)(@object >> 24),
+                (byte)(@object >> 32),
+                (byte)(@object >> 40),
+                (byte)(@object >> 48),
+                (byte)(@object >> 54)
+            };
+
+            return bytes;
+        }
+
+        public static byte[] ToByteArray(this string @object)
+        {
+            byte[] bytes = new byte[@object.Length];
+            for (int index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) { };
+            return bytes;
+        }
+
+        public static byte[] ToByteArray(this object @object) => @object switch
+        {
+            long @long => ToByteArray(@long),
+            int @int => ToByteArray(@int),
+            short @short => ToByteArray(@short),
+            byte @byte => ToByteArray(@byte),
+            string @byte => ToByteArray(@byte),
+            _ => default
+        };
+
 
         //public static unsafe byte[] ToByteArrayUnsafe(this object @object)
         //{
