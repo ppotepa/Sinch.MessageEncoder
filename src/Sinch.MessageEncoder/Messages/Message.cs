@@ -1,27 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
-        private readonly MessageHeaderTransport HeaderTransport;
+        private readonly MessageHeaderTransport _headerHeaderTransport;
         private readonly byte PayloadStream;
 
-        protected Message(MessageHeaderTransport transport, Span<byte> payloadSpan)
+        protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan)
         {
-            this.HeaderTransport = transport;
+            this._headerHeaderTransport = headerTransport;
         }
         
         public object Payload { get; set; }
         public byte[] PayloadArray { get; set; }
     }
 
-    public abstract class Message<TPayloadType> : Message where TPayloadType : IPayload
+    public abstract class Message<TPayloadType> : Message where TPayloadType : Payload
     {
         public abstract int HeadersCount { get; }
 
-        protected Message(MessageHeaderTransport transport, Span<byte> payloadSpan) : base(transport, payloadSpan)
+        protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan) : base(headerTransport, payloadSpan)
         {
         }
 
