@@ -9,7 +9,7 @@ public ref struct MessageTransport
     public Span<byte> BinaryPayload = default;
     public MessageHeaderTransport HeaderTransportInfo = new();
 
-    private const int DEFAULT_HEADERS_INDEX = 24;
+    private const int MSG_TYPE_INDEX = 24;
     private const int HEADERS_START_INDEX = 25;
     private const int LONG_LENGTH = 8;
 
@@ -25,12 +25,15 @@ public ref struct MessageTransport
             {
                 MSG_FROM = MemoryMarshal.Read<long>(messageSpan[..LONG_LENGTH]),
                 MSG_TO = MemoryMarshal.Read<long>(messageSpan[LONG_LENGTH..(LONG_LENGTH * 2)]),
-                MSG_TIMESTAMP = MemoryMarshal.Read<long>(messageSpan[(LONG_LENGTH * 2)..DEFAULT_HEADERS_INDEX]),
-                MSG_TYPE = messageSpan[DEFAULT_HEADERS_INDEX],
+                MSG_TIMESTAMP = MemoryMarshal.Read<long>(messageSpan[(LONG_LENGTH * 2)..MSG_TYPE_INDEX]),
+                MSG_TYPE = messageSpan[MSG_TYPE_INDEX],
+                PAYLOAD_START_INDEX = 9999,
+                //AdditionalHeaders = MessageHeader.ParseHeaders
             },
 
             BinaryPayload = messageSpan[24..messageSpan.Length]
         };
+
 
         int payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, ref result);
         return result;
@@ -38,7 +41,9 @@ public ref struct MessageTransport
 
     private static int MessageHeadersProcessor(Span<byte> messageSpan, ref MessageTransport transport)
     {
-        Span<byte> allHeaders = messageSpan[HEADERS_START_INDEX..messageSpan.Length];
+        long payloadStartIndex = MemoryMarshal.Read<long>(messageSpan[25..(25 + 8)]);
+        Span<byte> allHeaders = messageSpan[HEADERS_START_INDEX..(int)payloadStartIndex];
+        
         int index = 0;
         for (index = 0; index < allHeaders.Length;)
         {

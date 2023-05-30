@@ -1,6 +1,6 @@
-﻿namespace Sinch.MessageEncoder.PoC.Extensions
+﻿namespace Sinch.MessageEncoder.Extensions
 {
-    internal static class ObjectExtensions
+    public static class ObjectExtensions
     {
         public static byte[] ToByteArray(this object @object)
         {
@@ -43,7 +43,6 @@
                     return bytes;
                 }
                 case byte @byte:  return new[]{@byte}; 
-                case byte[] @bytes:  return @bytes; 
                 case string @string:
                 {
                     byte[] bytes = new byte[@string.Length];
@@ -54,29 +53,29 @@
             }
         }
 
-        public static unsafe byte[] ToByteArrayUnsafe(this object @object)
-        {
-            if (@object is long @long)
-            {
-                byte[] bytes = new byte[8];
-                fixed (byte* bytesPtr = bytes)
-                {
-                    *((long*)bytesPtr) = @long;
-                }
-                return bytes;
-            }
+        //public static unsafe byte[] ToByteArrayUnsafe(this object @object)
+        //{
+        //    if (@object is long @long)
+        //    {
+        //        byte[] bytes = new byte[8];
+        //        fixed (byte* bytesPtr = bytes)
+        //        {
+        //            *((long*)bytesPtr) = @long;
+        //        }
+        //        return bytes;
+        //    }
 
-            if (@object is int @int)
-            {
-                byte[] bytes = new byte[4];
-                fixed (byte* bytesPtr = bytes)
-                {
-                    *((long*)bytesPtr) = @int;
-                }
-                return bytes;
-            }
+        //    if (@object is int @int)
+        //    {
+        //        byte[] bytes = new byte[4];
+        //        fixed (byte* bytesPtr = bytes)
+        //        {
+        //            *((long*)bytesPtr) = @int;
+        //        }
+        //        return bytes;
+        //    }
 
-            return default;
-        }
+        //    return default;
+        //}
     }
 }

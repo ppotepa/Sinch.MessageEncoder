@@ -8,6 +8,8 @@ public struct MessageHeaderTransport
     public long MSG_TIMESTAMP = default;
     public long MSG_TO = default;
     public byte MSG_TYPE = default;
+    public long PAYLOAD_START_INDEX = default;
+
     internal Dictionary<int, byte[]> AdditionalHeaders = new();
     public MessageHeaderTransport()
     {
@@ -15,13 +17,11 @@ public struct MessageHeaderTransport
         MSG_TIMESTAMP = 0;
         MSG_TO = 0;
         MSG_TYPE = 0;
-        HEADERS_COUNT = 0;
+        PAYLOAD_START_INDEX = 0;
     }
-
-    public int HEADERS_COUNT { get; private set; }
 
     internal void AddHeader(byte[] byteArray)
     {
-        AdditionalHeaders[++HEADERS_COUNT] = byteArray;
+        //AdditionalHeaders[++HEADERS_COUNT] = byteArray;
     }
 }

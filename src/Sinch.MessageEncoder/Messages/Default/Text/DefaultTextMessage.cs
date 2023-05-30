@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Sinch.MessageEncoder.Extensions;
+using System;
+using System.Linq;
 
 namespace Sinch.MessageEncoder.Messages.Default.Text
 {
@@ -24,14 +25,15 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
         public string Surname { get; set; }
         public string Text { get; set; }
 
-        public override void Deserialize()
-        {
-            
-        }
-
         public override object Serialize()
         {
-            throw new NotImplementedException();
+            return new[] {
+                new[]{(byte)Name.Length}.Concat(Name.ToByteArray()),
+                new[]{(byte)Surname.Length}.Concat(Surname.ToByteArray()),
+                new[]{(byte)Text.Length}.Concat(Text.ToByteArray()),
+            }
+            .SelectMany(bytes => bytes)
+            .ToArray();
         }
     }
 }

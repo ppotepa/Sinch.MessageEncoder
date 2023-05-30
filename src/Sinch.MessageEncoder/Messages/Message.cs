@@ -6,8 +6,6 @@ namespace Sinch.MessageEncoder.Messages
     public abstract class Message
     {
         private readonly MessageHeaderTransport _headerHeaderTransport;
-        private readonly byte PayloadStream;
-
         protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan)
         {
             this._headerHeaderTransport = headerTransport;
@@ -23,17 +21,16 @@ namespace Sinch.MessageEncoder.Messages
 
         protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan) : base(headerTransport, payloadSpan)
         {
+           
         }
 
         public MessageHeader Header { get; init; }
-        public MessageHeaderTransport HeaderTransport { get; set; }
+        public MessageHeaderTransport HeaderTransport { get; protected set; }
 
         public new TPayloadType Payload
         {
-            get => (TPayloadType)base.Payload;
+            get => (TPayloadType) base.Payload;
             set => base.Payload = value;
         }
-
-        public MemoryStream PayloadStream { get; set; }
     }
 }
