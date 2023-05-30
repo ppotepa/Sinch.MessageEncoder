@@ -7,8 +7,9 @@ namespace Sinch.MessageEncoder.PoC
     //Helper Class that was used to create a Binary-Format array that represents Binary-Message-Transport
     internal class BinaryMessageBuilder
     {
-        private readonly object _payloadObject;
+        private object _payloadObject;
         private readonly List<KeyValuePair<string, object>> Headers = new();
+
         public BinaryMessageBuilder(long from, long to, long timestamp, byte msgType)
         {
             this.From = from;
