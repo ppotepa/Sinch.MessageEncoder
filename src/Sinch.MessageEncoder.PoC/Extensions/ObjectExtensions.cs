@@ -8,7 +8,7 @@
             {
                 case long @long:
                 {
-                    var bytes = new[]
+                    byte[] bytes = new[]
                     {
                         (byte)@long,
                         (byte)(@long >> 8),
@@ -23,7 +23,7 @@
                 }
                 case int @int:
                 {
-                    var bytes = new[]
+                    byte[] bytes = new[]
                     {
                         (byte)@int,
                         (byte)(@int >> 8),
@@ -35,7 +35,7 @@
                 }
                 case short @short:
                 {
-                    var bytes = new[]
+                    byte[] bytes = new[]
                     {
                         (byte)@short,
                         (byte)(@short >> 8),
@@ -57,7 +57,7 @@
         {
             if (@object is long @long)
             {
-                var bytes = new byte[8];
+                byte[] bytes = new byte[8];
                 fixed (byte* bytesPtr = bytes)
                 {
                     *((long*)bytesPtr) = @long;
@@ -67,7 +67,7 @@
 
             if (@object is int @int)
             {
-                var bytes = new byte[4];
+                byte[] bytes = new byte[4];
                 fixed (byte* bytesPtr = bytes)
                 {
                     *((long*)bytesPtr) = @int;

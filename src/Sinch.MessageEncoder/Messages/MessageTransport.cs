@@ -19,7 +19,7 @@ public ref struct MessageTransport
 
     public static MessageTransport FromSpan(Span<byte> messageSpan)
     {
-        MessageTransport result = new MessageTransport
+        MessageTransport result = new()
         {
             HeaderTransportInfo = new MessageHeaderTransport
             {
@@ -32,13 +32,13 @@ public ref struct MessageTransport
             BinaryPayload = messageSpan[24..messageSpan.Length]
         };
 
-        var payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, ref result);
+        int payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, ref result);
         return result;
     }
 
     private static int MessageHeadersProcessor(Span<byte> messageSpan, ref MessageTransport transport)
     {
-        var allHeaders = messageSpan[HEADERS_START_INDEX..messageSpan.Length];
+        Span<byte> allHeaders = messageSpan[HEADERS_START_INDEX..messageSpan.Length];
         int index = 0;
         for (index = 0; index < allHeaders.Length;)
         {
@@ -46,8 +46,8 @@ public ref struct MessageTransport
 
             if (currentHeaderLength > 0)
             {
-                var currentHeader = allHeaders[2..(currentHeaderLength + 2)];
-                var byteArray = new byte[currentHeaderLength];
+                Span<byte> currentHeader = allHeaders[2..(currentHeaderLength + 2)];
+                byte[] byteArray = new byte[currentHeaderLength];
                 int indexRelative = index % 1024;
 
                 transport.HeaderTransportInfo.AddHeader(currentHeader.ToArray());

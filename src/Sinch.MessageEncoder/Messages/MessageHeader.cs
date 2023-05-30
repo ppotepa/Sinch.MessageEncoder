@@ -7,8 +7,7 @@ namespace Sinch.MessageEncoder.Messages;
 public class MessageHeader
 {
     private sbyte _headerCount;
-
-    Dictionary<string, string> HeaderMap = default;
+    private readonly Dictionary<string, string> HeaderMap = default;
 
     public MessageHeader()
     {

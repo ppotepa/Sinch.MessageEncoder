@@ -4,19 +4,21 @@ using Sinch.MessageEncoder.PoC.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+// ReSharper disable InconsistentNaming
 
 namespace Sinch.MessageEncoder.Tests
 {
     public class Tests
     {
         private const string STRING_32_BYTES = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
         [Test]
         public void Binary_Serializer_Serializes_Basic_Headers_Correctly()
         {
             byte[] assertBytes =
             {
-                1,   0, 0,   0,   0, 0, 0, 0,
-                2,   0, 0,   0,   0, 0, 0, 0,
+                1, 0, 0, 0, 0, 0, 0, 0,
+                2, 0, 0, 0, 0, 0, 0, 0,
                 134, 1, 114, 100, 0, 0, 0, 0,
                 1
             };
@@ -24,7 +26,7 @@ namespace Sinch.MessageEncoder.Tests
             byte[] binaryMessageBuilder = new BinaryMessageBuilder(1, 2, 1685193094, 1)
                 .Serialize();
 
-            Assert.IsTrue(assertBytes.SequenceEqual(binaryMessageBuilder)); ;
+            Assert.That(assertBytes.SequenceEqual(binaryMessageBuilder), Is.True); ;
         }
 
         [Test]
@@ -46,7 +48,7 @@ namespace Sinch.MessageEncoder.Tests
                         97, 97, 97, 97, 97, 97, 97, 97
             };
 
-            var defaultSerializerInput = new object[]
+            object[] defaultSerializerInput = new object[]
             {
                 (long)1,
                 (long)2,
@@ -62,7 +64,7 @@ namespace Sinch.MessageEncoder.Tests
             IEnumerable<byte> defaultSerializerResult = defaultSerializerInput.SelectMany(integer => integer.ToByteArray());
             IEnumerable<byte> binarySerializerResult = defaultSerializerInput.SelectMany(data =>
             {
-                var result = data switch
+                IEnumerable<byte> result = data switch
                 {
                     // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
                     byte @byte => BitConverter.GetBytes(@byte).Take(1),
@@ -87,20 +89,30 @@ namespace Sinch.MessageEncoder.Tests
             bool[] testAssertionConditions = {
                 assertBytes.SequenceEqual(binaryMessageBuilder),        // Check against our BinaryBuilder.
                 assertBytes.SequenceEqual(defaultSerializerResult),     // Check against our ToByteArray() Extension Method.
-                assertBytes.SequenceEqual(binarySerializerResult)       // Check against built-in BitConverter.
+                assertBytes.SequenceEqual(binarySerializerResult)       // Check against Built-In BitConverter.
             };
 
-            Assert.IsTrue(testAssertionConditions.All(condition => condition));
+            Assert.That(testAssertionConditions.All(condition => condition), Is.True);
         }
 
         [Test]
         public void Custom_Bit_Converter_Matches_Results_With_Built_In_One()
         {
-            Assert.IsTrue(BitConverter.GetBytes(1).SequenceEqual(1.ToByteArray()));
-            Assert.IsTrue(BitConverter.GetBytes(1_000).SequenceEqual(1_000.ToByteArray()));
-            Assert.IsTrue(BitConverter.GetBytes(1_000_000).SequenceEqual(1_000_000.ToByteArray()));
-            Assert.IsTrue(BitConverter.GetBytes(1_000_000_000).SequenceEqual(1_000_000_000.ToByteArray()));
-            Assert.IsTrue(BitConverter.GetBytes(1_000_000_000_000).SequenceEqual(1_000_000_000_000.ToByteArray()));
+            const byte ONE = 1;
+            const short THOUSAND = 1_000;
+            const int MILLION = 1_000_000;
+            const long BILLION = 1_000_000_000;
+            const long TRILLION = 1_000_000_000_000;
+
+            // Out of some reason BitConverter interprets single byte as 2-byte digit.
+            Assert.Multiple(() =>
+            {
+                Assert.That(BitConverter.GetBytes(ONE).Take(1).SequenceEqual(ONE.ToByteArray()), Is.True);
+                Assert.That(BitConverter.GetBytes(THOUSAND).SequenceEqual(THOUSAND.ToByteArray()), Is.True);
+                Assert.That(BitConverter.GetBytes(MILLION).SequenceEqual(MILLION.ToByteArray()), Is.True);
+                Assert.That(BitConverter.GetBytes(BILLION).SequenceEqual(BILLION.ToByteArray()), Is.True);
+                Assert.That(BitConverter.GetBytes(TRILLION).SequenceEqual(TRILLION.ToByteArray()), Is.True);
+            });
         }
 
         [SetUp]

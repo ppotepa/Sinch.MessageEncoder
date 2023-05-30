@@ -1,7 +1,6 @@
 ﻿using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 
@@ -11,15 +10,15 @@ namespace Sinch.MessageEncoder.PoC
     {
         private static Span<byte> ExtractFromFile(string filePath)
         {
-            using MemoryStream inMemoryCopy = new MemoryStream();
+            using MemoryStream inMemoryCopy = new();
             using (FileStream fileStream = File.OpenRead(filePath))
             {
-                using DeflateStream decompressor = new DeflateStream(fileStream, CompressionMode.Decompress);
+                using DeflateStream decompressor = new(fileStream, CompressionMode.Decompress);
                 decompressor.CopyTo(inMemoryCopy);
                 inMemoryCopy.Position = 0;
             }
 
-            var span = new Span<byte>(new byte[inMemoryCopy.Length]);
+            Span<byte> span = new(new byte[inMemoryCopy.Length]);
             _ = inMemoryCopy.Read(span);
             return span;
         }
@@ -42,11 +41,11 @@ namespace Sinch.MessageEncoder.PoC
 
             while (iter++ != -1)
             {
-                var messageTransport = MessageTransport.FromSpan(binaryObject);
-                var message = MessageFactory(messageTransport);
+                MessageTransport messageTransport = MessageTransport.FromSpan(binaryObject);
+                Message message = MessageFactory(messageTransport);
 
-                var a = message.Payload;
-                var payload = message.Payload;
+                object a = message.Payload;
+                object payload = message.Payload;
 
                 if (iter % 100000000 is 0)
                 {
@@ -57,12 +56,11 @@ namespace Sinch.MessageEncoder.PoC
 
         static Message MessageFactory(MessageTransport messageTransport)
         {
-            switch (messageTransport.HeaderTransportInfo.MSG_TYPE)
+            return messageTransport.HeaderTransportInfo.MSG_TYPE switch
             {
-                case 1: return new DefaultTextMessage(messageTransport.HeaderTransportInfo, messageTransport.BinaryPayload);
-            }
-
-            return default;
+                1 => new DefaultTextMessage(messageTransport.HeaderTransportInfo, messageTransport.BinaryPayload),
+                _ => default
+            };
         }
     }
 }

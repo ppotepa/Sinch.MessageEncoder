@@ -7,8 +7,8 @@ namespace Sinch.MessageEncoder.PoC
     //Helper Class that was used to create a Binary-Format array that represents Binary-Message-Transport
     internal class BinaryMessageBuilder
     {
-        private object _payloadObject;
-        private List<KeyValuePair<string, object>> Headers = new();
+        private readonly object _payloadObject;
+        private readonly List<KeyValuePair<string, object>> Headers = new();
         public BinaryMessageBuilder(long from, long to, long timestamp, byte msgType)
         {
             this.From = from;
@@ -37,7 +37,7 @@ namespace Sinch.MessageEncoder.PoC
 
         public byte[] Serialize()
         {
-            var result = new []
+            byte[][] result = new[]
             {
                 From.ToByteArray(),
                 To.ToByteArray(),
@@ -52,7 +52,7 @@ namespace Sinch.MessageEncoder.PoC
                 .SelectMany(bytes => bytes).ToArray(),
             };
 
-            var flatten = result.SelectMany(@byte => @byte).ToArray();
+            byte[] flatten = result.SelectMany(@byte => @byte).ToArray();
             return flatten;
         }
     }
