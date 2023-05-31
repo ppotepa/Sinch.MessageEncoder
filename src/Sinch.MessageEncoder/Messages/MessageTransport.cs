@@ -1,6 +1,5 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System;
 
 namespace Sinch.MessageEncoder.Messages;
 
@@ -20,15 +19,7 @@ public ref struct MessageTransport
 
         MessageTransport result = new()
         {
-            HeaderTransportInfo = new MessageHeaderTransport
-            {
-                MSG_FROM = messageSpan.GetMessageFrom(),
-                MSG_TO = messageSpan.GetMessageTo(),
-                MSG_TIMESTAMP = messageSpan.GetMessageTimestamp(),
-                MSG_TYPE = messageSpan.GetMessageType(),
-                HEADERS_LENGTH = headersLength,
-            },
-
+            HeaderTransportInfo = MessageHeaderTransport.FromSpan(messageSpan, headersLength),
             BinaryPayload = messageSpan[(int)(25 + 8 + headersLength)..messageSpan.Length]
         };
 

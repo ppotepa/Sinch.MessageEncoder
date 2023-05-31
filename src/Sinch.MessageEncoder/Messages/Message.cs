@@ -1,25 +1,22 @@
 ﻿using System;
-using System.IO;
 
 namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
-        private readonly MessageHeaderTransport _headerHeaderTransport;
+        private readonly MessageHeaderTransport _headerTransport;
         protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan)
         {
-            this._headerHeaderTransport = headerTransport;
+            this._headerTransport = headerTransport;
         }
 
         public object Payload { get; set; }
-        public byte[] PayloadArray { get; set; }
     }
 
     public abstract class Message<TPayloadType> : Message where TPayloadType : Payload, new()
     {
         private TPayloadType _payload;
         public abstract int HeadersCount { get; }
-
         protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan) : base(headerTransport, payloadSpan)
         {
 
@@ -32,10 +29,8 @@ namespace Sinch.MessageEncoder.Messages
         {
             get
             {
-                if (_payload is null)
-                {
-                    _payload = new TPayloadType();
-                }
+                if (_payload is not null) return _payload;
+                _payload = new TPayloadType();
                 return _payload;
             }
             set => base.Payload = value;

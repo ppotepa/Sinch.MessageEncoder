@@ -4,6 +4,7 @@ using Sinch.MessageEncoder.PoC.Diagnostics;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -43,12 +44,12 @@ namespace Sinch.MessageEncoder.PoC
                 to: 2,
                 timestamp: 1685193094,
                 msgType: 1,
-                headersLength: 24 + (2 + 1) + (2 + 1) + (2 + 1) + 2 + 3
+                headersLength: new long[] { 24, 2 + 1, 2 + 1, 2 + 1, 2, 3 }.Sum()
             )
-            .AddHeader("test-header", (byte)254)
-            .AddHeader("test-header2", (byte)100)
-            .AddHeader("test-header3", (byte)50)
-            .AddHeader("test-header5", "Test String Header")
+            .AddHeader("test-header", (byte)  254)
+            .AddHeader("test-header2", (byte) 100)
+            .AddHeader("test-header3", (byte) 50)
+            .AddHeader("test-header5", "AAAAAAAAAAAAAAAA")
             .AddPayload(new DefaultTextMessagePayload { SerializedText = "John" })
             .Serialize();
 

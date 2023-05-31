@@ -20,6 +20,7 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
             }
             while ((length += 2 + current.Length) < payloadSpan.Length);
 
+            HeaderTransport = headerTransport;
             Payload = new DefaultTextMessagePayload
             {
                 SerializedText = System.Text.Encoding.Default.GetString(payloadSpan[2..payloadSpan.Length]),
@@ -30,7 +31,7 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     }
 
     public class DefaultTextMessagePayload : Payload
-    {   
+    {
         public string SerializedText { get; set; }
         protected override object[] SerializationOrder => new object[] { SerializedText };
 

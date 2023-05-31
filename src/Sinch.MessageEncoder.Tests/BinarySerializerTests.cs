@@ -4,6 +4,8 @@ using Sinch.MessageEncoder.PoC.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ObjectExtensions = Sinch.MessageEncoder.Extensions.ObjectExtensions;
+
 // ReSharper disable InconsistentNaming
 
 namespace Sinch.MessageEncoder.Tests
@@ -67,21 +69,7 @@ namespace Sinch.MessageEncoder.Tests
         public void Binary_Serializer_Serializes_Basic_Headers_Correctly_With_Additional_Headers()
         {
             IEnumerable<byte> defaultSerializerResult = defaultSerializerInput.SelectMany(integer => integer.ToByteArray());
-            IEnumerable<byte> binarySerializerResult = defaultSerializerInput.SelectMany(data =>
-            {
-                IEnumerable<byte> result = data switch
-                {
-                    // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
-                    byte @byte => BitConverter.GetBytes((short)@byte).Take(1),
-                    short @short => BitConverter.GetBytes(@short),
-                    int @int => BitConverter.GetBytes(@int),
-                    long @long => BitConverter.GetBytes(@long),
-                    string @string => System.Text.Encoding.ASCII.GetBytes(@string),
-                    _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
-                };
-
-                return result;
-            });
+            IEnumerable<byte> binarySerializerResult = defaultSerializerInput.SelectMany(ObjectExtensions.GetBytes);
 
             byte[] binaryMessageBuilder = new BinaryMessageBuilder((long)1, (long)2, (long)1685193094, (byte)1, ((1 + 2 + 4 + 8 + 32) + (2 * 5)))
                 .AddHeader("byte", (byte)100)

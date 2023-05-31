@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -84,30 +86,18 @@ namespace Sinch.MessageEncoder.Extensions
             };
         }
 
-
-        //public static unsafe byte[] ToByteArrayUnsafe(this object @object)
-        //{
-        //    if (@object is long @long)
-        //    {
-        //        byte[] bytes = new byte[8];
-        //        fixed (byte* bytesPtr = bytes)
-        //        {
-        //            *((long*)bytesPtr) = @long;
-        //        }
-        //        return bytes;
-        //    }
-
-        //    if (@object is int @int)
-        //    {
-        //        byte[] bytes = new byte[4];
-        //        fixed (byte* bytesPtr = bytes)
-        //        {
-        //            *((long*)bytesPtr) = @int;
-        //        }
-        //        return bytes;
-        //    }
-
-        //    return default;
-        //}
+        public static IEnumerable<byte> GetBytes(this object data)
+        {
+            return data switch
+            {
+                // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
+                byte @byte => BitConverter.GetBytes((short)@byte).Take(1),
+                short @short => BitConverter.GetBytes(@short),
+                int @int => BitConverter.GetBytes(@int),
+                long @long => BitConverter.GetBytes(@long),
+                string @string => System.Text.Encoding.ASCII.GetBytes(@string),
+                _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
+            };
+        }
     }
 }
