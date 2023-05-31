@@ -49,9 +49,6 @@ public ref struct MessageTransport
 
             if (currentHeaderLength > 0)
             {
-                byte[] byteArray = new byte[currentHeaderLength];
-                int indexRelative = index % 1024;
-
                 transport.HeaderTransportInfo.AddHeader(currentHeader.ToArray());
                 index += 2 + currentHeaderLength;
             }

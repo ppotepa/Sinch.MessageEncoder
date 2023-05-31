@@ -22,7 +22,7 @@ namespace Sinch.MessageEncoder.PoC
 
             Span<byte> span = new(new byte[inMemoryCopy.Length]);
             _ = inMemoryCopy.Read(span);
-            inMemoryCopy.Dispose();            
+            inMemoryCopy.Dispose();
             return span;
         }
 
@@ -37,13 +37,20 @@ namespace Sinch.MessageEncoder.PoC
 
         private static void Measure()
         {
-            byte[] binaryObject = new BinaryMessageBuilder(1, 2, 1685193094, 1, 24 + (2 + 1) + (2 + 1) + (2 + 1) + 2 + 3)
-                .AddHeader("test-header", (byte)254)
-                .AddHeader("test-header2", (byte)100)
-                .AddHeader("test-header3", (byte)50)
-                .AddHeader("test-header5", "Test String Header")
-                .AddPayload(new DefaultTextMessagePayload { SerializedText = "John" })
-                .Serialize();
+            byte[] binaryObject = new BinaryMessageBuilder
+            (
+                from: 1,
+                to: 2,
+                timestamp: 1685193094,
+                msgType: 1,
+                headersLength: 24 + (2 + 1) + (2 + 1) + (2 + 1) + 2 + 3
+            )
+            .AddHeader("test-header", (byte)254)
+            .AddHeader("test-header2", (byte)100)
+            .AddHeader("test-header3", (byte)50)
+            .AddHeader("test-header5", "Test String Header")
+            .AddPayload(new DefaultTextMessagePayload { SerializedText = "John" })
+            .Serialize();
 
             MessageTransport messageTransport = MessageTransport.FromSpan(binaryObject);
             Message message = MessageFactory(messageTransport);

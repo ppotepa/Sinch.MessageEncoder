@@ -40,6 +40,7 @@ namespace Sinch.MessageEncoder.Tests
             2, 0, 0, 0, 0, 0, 0, 0,                     //  TO                  [8] bytes - translates to [2]
             134, 1, 114, 100, 0, 0, 0, 0,               //  TIMESTAMP           [8] bytes - translates to { 01.01.0001 00:02:48 }
             1,                                          //  MSG_TYPE            [1] byte  - translates to [1] 
+            0, 0, 0, 0, 0, 0, 0, 0                      //  MSG_TYPE            [1] byte  - translates to [1] 
         };
 
         private readonly object[] defaultSerializerInput = {
@@ -81,7 +82,7 @@ namespace Sinch.MessageEncoder.Tests
 
                 return result;
             });
-            
+
             byte[] binaryMessageBuilder = new BinaryMessageBuilder((long)1, (long)2, (long)1685193094, (byte)1, ((1 + 2 + 4 + 8 + 32) + (2 * 5)))
                 .AddHeader("byte", (byte)100)
                 .AddHeader("short", (short)100)

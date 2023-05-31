@@ -32,6 +32,8 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     public class DefaultTextMessagePayload : Payload
     {   
         public string SerializedText { get; set; }
+        protected override object[] SerializationOrder => new object[] { SerializedText };
+
         public override object Serialize()
         {
             byte[] textBytes = SerializedText.ToByteArray();
