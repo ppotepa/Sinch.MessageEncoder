@@ -1,38 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Sinch.MessageEncoder.Messages;
+﻿namespace Sinch.MessageEncoder.Messages;
 
 public class MessageHeader
 {
-    private sbyte _headerCount;
-    private readonly Dictionary<string, string> HeaderMap = default;
+    public readonly long From = default;
+    public readonly long HeadersLength = default;
+    public readonly byte MessageType = default;
+    public readonly long Timestamp = default;
+    public readonly long To = default;
+
+    private readonly byte[] AdditionalHeaders = default;
+    private byte _headerCount = 0;
 
     public MessageHeader()
     {
-        HeaderMap = new Dictionary<string, string>();
-        _headerCount = 0;
     }
 
-    public sbyte HeaderCount
+    protected MessageHeader(long from, long to, byte messageType, long timestamp, long headersLength,
+        byte[] additionalHeaders) 
+    {
+        From = from;
+        To = to;
+        MessageType = messageType;
+        Timestamp = timestamp;
+        HeadersLength = headersLength;
+        AdditionalHeaders = additionalHeaders;
+    }
+
+    public byte HeaderCount
     {
         get
         {
-            _headerCount = (sbyte)HeaderMap.Count;
+            _headerCount = (byte)AdditionalHeaders.Length;
             return _headerCount;
         }
     }
-    public string this[string key]
-    {
-        get => HeaderMap[key];
-        set
-        {
-            if (key.Length > 1023) throw new InvalidOperationException();
-            if (value.Length > 1023) throw new InvalidOperationException();
-            HeaderMap[key] = value;
-        }
-    }
 
-    public override string ToString() => string.Join("\n", HeaderMap.ToList().Select(kvp => $"{kvp.Key}||{kvp.Value}"));
+    public static MessageHeader FromTransport(MessageHeaderTransport headerTransport)
+    {
+        return new MessageHeader
+        (
+            from: headerTransport.MSG_FROM,
+            to: headerTransport.MSG_TO,
+            messageType: headerTransport.MSG_TYPE,
+            timestamp:
+            headerTransport.MSG_TIMESTAMP,
+            headersLength: headerTransport.HEADERS_LENGTH,
+            additionalHeaders: headerTransport.HEADER_BYTES
+        );
+    }
 }

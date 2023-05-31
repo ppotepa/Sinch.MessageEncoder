@@ -1,10 +1,14 @@
-﻿using System.Linq;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System.Linq;
 
 namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Payload
     {
+        protected Payload()
+        {
+        }
+
         protected abstract object[] SerializationOrder { get; }
 
         public virtual object Serialize()

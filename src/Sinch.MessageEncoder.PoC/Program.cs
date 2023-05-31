@@ -50,7 +50,8 @@ namespace Sinch.MessageEncoder.PoC
             .AddHeader("test-header2", (byte) 100)
             .AddHeader("test-header3", (byte) 50)
             .AddHeader("test-header5", "AAAAAAAAAAAAAAAA")
-            .AddPayload(new DefaultTextMessagePayload { SerializedText = "John" })
+            .AddHeader("test-header6", "BBBBBBBBBBBBBBBB")
+            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John" })
             .Serialize();
 
             MessageTransport messageTransport = MessageTransport.FromSpan(binaryObject);
