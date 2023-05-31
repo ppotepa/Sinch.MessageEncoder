@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sinch.MessageEncoder.Messages
+﻿namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Payload
     {

@@ -10,18 +10,19 @@ namespace Sinch.MessageEncoder.Messages
         {
             this._headerHeaderTransport = headerTransport;
         }
-        
+
         public object Payload { get; set; }
         public byte[] PayloadArray { get; set; }
     }
 
-    public abstract class Message<TPayloadType> : Message where TPayloadType : Payload
+    public abstract class Message<TPayloadType> : Message where TPayloadType : Payload, new()
     {
+        private TPayloadType _payload;
         public abstract int HeadersCount { get; }
 
         protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan) : base(headerTransport, payloadSpan)
         {
-           
+
         }
 
         public MessageHeader Header { get; init; }
@@ -29,7 +30,14 @@ namespace Sinch.MessageEncoder.Messages
 
         public new TPayloadType Payload
         {
-            get => (TPayloadType) base.Payload;
+            get
+            {
+                if (_payload is null)
+                {
+                    _payload = new TPayloadType();
+                }
+                return _payload;
+            }
             set => base.Payload = value;
         }
     }

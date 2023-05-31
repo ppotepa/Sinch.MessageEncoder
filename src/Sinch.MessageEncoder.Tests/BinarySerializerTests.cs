@@ -71,7 +71,7 @@ namespace Sinch.MessageEncoder.Tests
                 IEnumerable<byte> result = data switch
                 {
                     // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
-                    byte @byte => BitConverter.GetBytes(@byte).Take(1),
+                    byte @byte => BitConverter.GetBytes((short)@byte).Take(1),
                     short @short => BitConverter.GetBytes(@short),
                     int @int => BitConverter.GetBytes(@int),
                     long @long => BitConverter.GetBytes(@long),
@@ -105,7 +105,7 @@ namespace Sinch.MessageEncoder.Tests
             Assert.Multiple(() =>
             {
                 // Out of some reason BitConverter interprets single byte as 2-byte digit.
-                Assert.That(BitConverter.GetBytes(ONE).Take(1).SequenceEqual(ONE.ToByteArray()), Is.True);
+                Assert.That(BitConverter.GetBytes((short)ONE).Take(1).SequenceEqual(ONE.ToByteArray()), Is.True);
                 Assert.That(BitConverter.GetBytes(THOUSAND).SequenceEqual(THOUSAND.ToByteArray()), Is.True);
                 Assert.That(BitConverter.GetBytes(MILLION).SequenceEqual(MILLION.ToByteArray()), Is.True);
                 Assert.That(BitConverter.GetBytes(BILLION).SequenceEqual(BILLION.ToByteArray()), Is.True);
