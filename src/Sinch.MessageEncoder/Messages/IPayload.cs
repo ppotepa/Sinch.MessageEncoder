@@ -1,7 +1,4 @@
-﻿using Sinch.MessageEncoder.Extensions;
-using System.Linq;
-
-namespace Sinch.MessageEncoder.Messages
+﻿namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Payload
     {
@@ -9,21 +6,21 @@ namespace Sinch.MessageEncoder.Messages
         {
         }
 
-        protected abstract object[] SerializationOrder { get; }
-
         public virtual object Serialize()
         {
-            object[] order = SerializationOrder;
-            var result = order.Select
-            (
-                property =>
-                {
-                    byte[] byteArr = property.ToByteArray();
-                    return new[] { byteArr.Length.ToShortByteArray(), byteArr };
-                }
-            );
+            //object order = new object();
+            //var result = order.Select
+            //(
+            //    property =>
+            //    {
+            //        byte[] byteArr = property.ToByteArray();
+            //        return new[] { byteArr.Length.ToShortByteArray(), byteArr };
+            //    }
+            //);
 
-            return result.SelectMany(bytes => bytes);
+            //return result.SelectMany(bytes => bytes);
+
+            return default;
         }
     }
 }

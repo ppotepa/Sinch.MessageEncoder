@@ -1,25 +1,30 @@
-﻿using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Extensions;
 using System;
 using System.Linq;
 using System.Text;
 
-namespace Sinch.MessageEncoder.Messages.Default.Text;
-
-public class DefaultTextMessagePayload : Payload
+namespace Sinch.MessageEncoder.Messages.Default.Text
 {
-    public string TextMessageBody { get; init; }
-
-    protected override object[] SerializationOrder => new object[] { () => TextMessageBody };
-
-    public DefaultTextMessagePayload Deserialize(Span<byte> payloadSpan)
+    public class DefaultPayloadSerializer : Serialization.DefaultPayloadSerializer
     {
-        SerializationOrder[0] = Encoding.ASCII.GetString(payloadSpan[2..payloadSpan.Length]);
-        return this;
     }
 
-    public override object Serialize()
+    public class DefaultTextMessagePayload : Payload
     {
-        var textBytes = TextMessageBody.ToByteArray();
-        return textBytes.Length.ToShortByteArray().Concat(textBytes).ToArray();
+        [SerializeAs(typeof(string), Order = 1, Serializer = typeof(DefaultPayloadSerializer))]
+        public string TextMessageBody { get; set; }
+
+        public DefaultTextMessagePayload Deserialize(Span<byte> payloadSpan)
+        {
+            var result = new DefaultPayloadSerializer().Deserialize<DefaultTextMessagePayload>(payloadSpan);
+            return result;
+        }
+
+        public override object Serialize()
+        {
+            byte[] textBytes = TextMessageBody.ToByteArray();
+            return textBytes.Length.ToShortByteArray().Concat(textBytes).ToArray();
+        }
     }
 }
