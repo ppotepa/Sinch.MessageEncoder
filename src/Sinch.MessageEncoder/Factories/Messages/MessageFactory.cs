@@ -3,7 +3,6 @@ using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
-using Sinch.MessageEncoder.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,60 +10,70 @@ using System.Reflection;
 
 namespace Sinch.MessageEncoder.Factories.Messages
 {
-    internal abstract class MessageFactory
+    internal sealed class MessageFactory
     {
-        private static readonly Dictionary<byte, Type> MessageTypes = AppDomain.CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>
-        (
-            types => types.ToDictionary(type => type.GetCustomAttribute<MessageTypeAttribute>()!.MessageTypeCode, type => type)
-        );
+        private static readonly Dictionary<byte, Type> MessageTypes = default;
+        private static readonly Dictionary<Type, Type> MessageTypesBinding = default;
 
-        private static Dictionary<Type, Type> MessageTypesBinding
-            => AppDomain.CurrentDomain.GetSubclassesOfOpenGeneric(typeof(Message<,>));
+        static MessageFactory()
+        {
+            MessageTypes = AppDomain.CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>
+            (
+                types => types.ToDictionary(type => type.GetCustomAttribute<MessageTypeAttribute>()!.MessageTypeCode, type => type)
+            );
+            MessageTypesBinding = AppDomain.CurrentDomain.GetSubclassesOfOpenGeneric(typeof(Message<,>));
+        }
 
         public static Message Create(byte[] messageBinary)
         {
-            Message result = default;
             MessageTransport messageTransport = MessageTransport.FromSpan(messageBinary);
             var target = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE];
 
-            if (target.BaseType != null)
+            if (target.BaseType == null) 
+                throw new InvalidOperationException("Message Type not supported");
+
+            var headersType = target.BaseType.GenericTypeArguments[0];
+            var payloadType = target.BaseType.GenericTypeArguments[1];
+
+            var serializers = new
             {
-                var headersType = target.BaseType.GenericTypeArguments[0];
-                var payloadType = target.BaseType.GenericTypeArguments[1];
+                headers = SerializersFactory.CreateHeadersSerializer(headersType),
+                payload = SerializersFactory.CreatePayloadSerializer(payloadType),
+            };
 
-                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
-                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
+            return Activator.CreateInstance
+            (
+                type: MessageTypesBinding[typeof(Message<,>).MakeGenericType(headersType, payloadType)],
+                args: new object[]
+                {
+                    serializers.headers.Deserialize(headersType, messageTransport.HeaderTransportInfo),
+                    serializers.payload.Deserialize(messageTransport.BinaryPayload, payloadType)
+                }
 
-                var headers = headersSerializer.Deserialize(headersType, messageTransport.HeaderTransportInfo);
-                var payload = payloadSerializer.Deserialize(messageTransport.BinaryPayload, payloadType);
-                var targetGenericBaseType = typeof(Message<,>).MakeGenericType(headersType, payloadType);
-
-                result = Activator.CreateInstance(MessageTypesBinding[targetGenericBaseType], headers, payload) as Message;
-            }
-
-            return result;
+            ) as Message;
         }
 
         public static byte[] Serialize(Message message)
         {
-            byte[] result = default;
-            Type target = MessageTypes[((MessageHeader)message.Headers).MessageType];
+            if (message.Headers is not MessageHeader headers)
+                throw new InvalidOperationException();
 
-            if (target.BaseType != null)
+            if (MessageTypes[headers.MessageType].BaseType is not { GenericTypeArguments.Length: 2 }) 
+                throw new InvalidOperationException("Message type not supported.");
+
+            Type targetBase = MessageTypes[headers.MessageType].BaseType;
+
+            var serializers = new
             {
-                var headersType = target.BaseType.GenericTypeArguments[0];
-                var payloadType = target.BaseType.GenericTypeArguments[1];
-
-                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
-                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
-
-                var headers = headersSerializer.Serialize(message.Headers as DefaultTextMessageHeaders);
-                var payload = payloadSerializer.Serialize(message.Payload as DefaultTextMessagePayload);
-
-                result = new[] { headers, payload }.SelectMany(bytes => bytes).ToArray();
+                headers = SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
+                payload = SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1]),
+            };
+            
+            return new[] {
+                serializers.headers.Serialize(message.Headers as DefaultTextMessageHeaders),
+                serializers.payload.Serialize(message.Payload as DefaultTextMessagePayload)
             }
-
-            return result;
+            .SelectMany(bytes => bytes).ToArray();
         }
     }
 }

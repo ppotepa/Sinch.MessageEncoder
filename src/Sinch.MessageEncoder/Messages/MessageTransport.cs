@@ -23,11 +23,11 @@ public ref struct MessageTransport
             BinaryPayload = messageSpan[(int)(25 + 8 + headersLength)..messageSpan.Length]
         };
 
-        int payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, ref result, headersLength);
+        int payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, headersLength);
         return result;
     }
 
-    private static int MessageHeadersProcessor(Span<byte> messageSpan, ref MessageTransport transport, long headersLength)
+    private static int MessageHeadersProcessor(Span<byte> messageSpan, long headersLength)
     {
         Span<byte> allHeaders = messageSpan.GetAllHeaders(headersLength);
         Span<byte> currentHeader = default;

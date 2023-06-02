@@ -1,11 +1,17 @@
-﻿namespace Sinch.MessageEncoder.Messages
+﻿using System;
+
+namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
         protected Message(object headers, object payload)
         {
-            this._headers = headers;
-            this._payload = payload;
+            this._headers = headers ?? throw new ArgumentNullException(nameof(headers));
+            this._payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        }
+
+        protected Message()
+        {
         }
 
         protected object _headers;
@@ -32,7 +38,7 @@
         {
             get
             {
-                if (_headers is null) _headers = new THeadersType();
+                _headers ??= new THeadersType();
                 return _headers as THeadersType;
             }
         }
@@ -42,7 +48,7 @@
         {
             get
             {
-                if (_payload is null) _payload = new TPayloadType();
+                _payload ??= new TPayloadType();
                 return _payload as TPayloadType;
             }
         }

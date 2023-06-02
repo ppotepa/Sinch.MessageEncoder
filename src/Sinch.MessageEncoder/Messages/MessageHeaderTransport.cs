@@ -12,6 +12,7 @@ public struct MessageHeaderTransport
     public readonly long MSG_TO = default;
     public readonly byte MSG_TYPE = default;
     private int HEADERS_COUNT = default;
+
     public byte[] HEADER_BYTES = Array.Empty<byte>();
 
     public MessageHeaderTransport()
@@ -43,7 +44,7 @@ public struct MessageHeaderTransport
 
     public static MessageHeaderTransport FromSpan(Span<byte> messageSpan, long headersLength)
     {
-        return new(
+        return new MessageHeaderTransport(
             msgFrom: messageSpan.GetMessageFrom(),
             msgTo: messageSpan.GetMessageTo(),
             msgTimestamp: messageSpan.GetMessageTimestamp(),

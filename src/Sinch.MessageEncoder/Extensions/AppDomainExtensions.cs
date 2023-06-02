@@ -28,16 +28,28 @@ internal static class AppDomainExtensions
 
     public static Dictionary<Type, Type> GetSubclassesOfOpenGeneric(this AppDomain @this, Type openGenericType)
     {
-        var _related = _types.Select(type => new { type, baseType = type.BaseType })
-            .Where(pair =>
-            {
-                return !pair.type.IsAbstract && !pair.type.IsInterface &&
-                       pair.baseType is { IsGenericType: true } &&
-                       pair.baseType.GetGenericTypeDefinition() == openGenericType;
-            })
+        var related = _types.Select(type => new { type, baseType = type.BaseType })
+            .Where
+            (
+                pair => pair.type.IsAbstract is false && 
+                pair.type.IsInterface is false &&
+                pair.baseType is { IsGenericType: true } &&
+                pair.baseType.GetGenericTypeDefinition() == openGenericType
+            )
             .Select(pair => pair.type)
-            .ToDictionary(x => typeof(Message<,>).MakeGenericType(x.BaseType.GenericTypeArguments[0], x.BaseType.GenericTypeArguments[1]), t => t);
+            .ToDictionary(KeySelector, type => type);
 
-        return _related;
+        return related;
+    }
+
+    private static Type KeySelector(Type type)
+    {
+        Type result = typeof(Message<,>).MakeGenericType
+        (
+            type.BaseType?.GenericTypeArguments[0] ?? throw new InvalidOperationException(),
+            type.BaseType.GenericTypeArguments[1]
+        );
+
+        return result;
     }
 }

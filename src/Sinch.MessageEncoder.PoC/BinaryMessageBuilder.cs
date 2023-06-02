@@ -59,7 +59,7 @@ namespace Sinch.MessageEncoder.PoC
             // ReSharper disable once RedundantCast - in this case it is not Redunant,
             // because it makes our byteArray 8-byte long instead of 4-byte
             byte[] headersByteArrayLength = ((long)(headersByteArray.Length)).ToByteArray();
-            byte[] payloadByteArray = PayloadSerializerFactory.CreateSerializer(Payload?.GetType()).Serialize(Payload);
+            byte[] payloadByteArray = SerializersFactory.CreatePayloadSerializer(Payload?.GetType()).Serialize(Payload);
 
             var result = new byte[][]
             {

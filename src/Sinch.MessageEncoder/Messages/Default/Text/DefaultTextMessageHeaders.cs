@@ -6,5 +6,12 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     [UseSerializer(typeof(DefaultHeadersSerializer))]
     public class DefaultTextMessageHeaders : MessageHeader
     {
+        public DefaultTextMessageHeaders(MessageHeaderTransport headersTransport) : base(headersTransport)
+        {
+        }
+
+        public DefaultTextMessageHeaders()
+        {
+        }
     }
 }

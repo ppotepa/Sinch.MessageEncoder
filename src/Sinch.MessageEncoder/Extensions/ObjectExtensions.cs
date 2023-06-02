@@ -8,6 +8,8 @@ namespace Sinch.MessageEncoder.Extensions
     {
         private static byte[] __toByteArrayByte(this byte @object)
         {
+            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
+
             byte[] bytes = new[]
             {
                 (byte)@object,
@@ -18,6 +20,8 @@ namespace Sinch.MessageEncoder.Extensions
 
         private static byte[] __toByteArrayShort(this short @object)
         {
+            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
+
             byte[] bytes = new[]
             {
                 (byte)@object,
@@ -29,6 +33,8 @@ namespace Sinch.MessageEncoder.Extensions
 
         private static byte[] __toByteArrayInt(this int @object)
         {
+            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
+
             byte[] bytes = new[]
             {
                 (byte)@object,
@@ -42,6 +48,8 @@ namespace Sinch.MessageEncoder.Extensions
 
         private static byte[] __toBytearrayLong(this long @object)
         {
+            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
+
             byte[] bytes = new[]
             {
                 (byte)@object,
@@ -59,25 +67,34 @@ namespace Sinch.MessageEncoder.Extensions
 
         private static byte[] __toByteArrayString(this string @object)
         {
+            if (@object == null) throw new ArgumentNullException(nameof(@object));
+
             byte[] bytes = new byte[@object.Length];
             for (int index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) { };
             return bytes;
         }
 
-        public static byte[] ToByteArray(this object @object) => @object switch
+        public static byte[] ToByteArray(this object @object)
         {
-            long @long => __toBytearrayLong(@long),
-            int @int => __toByteArrayInt(@int),
-            short @short => __toByteArrayShort(@short),
-            byte @byte => __toByteArrayByte(@byte),
-            string @string => __toByteArrayString(@string),
-            byte[] @bytes => @bytes,
-            null => Array.Empty<byte>(),
-            _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, "null")
-        };
+            if (@object == null) throw new ArgumentNullException(nameof(@object));
+
+            return @object switch
+            {
+                long @long => __toBytearrayLong(@long),
+                int @int => __toByteArrayInt(@int),
+                short @short => __toByteArrayShort(@short),
+                byte @byte => __toByteArrayByte(@byte),
+                string @string => __toByteArrayString(@string),
+                byte[] @bytes => @bytes,
+                null => Array.Empty<byte>(),
+                _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, "null")
+            };
+        }
 
         public static byte[] ToShortByteArray(this int @object)
         {
+            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
+
             if (@object == default)
                 return Array.Empty<byte>();
 
@@ -90,6 +107,8 @@ namespace Sinch.MessageEncoder.Extensions
 
         public static IEnumerable<byte> GetBytes(this object data)
         {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
             return data switch
             {
                 // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
