@@ -41,9 +41,9 @@ namespace Sinch.MessageEncoder.PoC
         }
 
         public byte[] Serialize()
-        {            
+        {
             Payload ??= Payload.Empty;
-            
+
             byte[] fromByteArray = From.ToByteArray();
             byte[] toByteArray = To.ToByteArray();
             byte[] timestampByteArray = Timestamp.ToByteArray();
@@ -61,7 +61,7 @@ namespace Sinch.MessageEncoder.PoC
             byte[] headersByteArrayLength = ((long)(headersByteArray.Length)).ToByteArray();
             byte[] payloadByteArray = PayloadSerializerFactory.CreateSerializer(Payload?.GetType()).Serialize(Payload);
 
-            var result = new object[]
+            var result = new byte[][]
             {
                 fromByteArray,
                 toByteArray,
@@ -85,7 +85,7 @@ namespace Sinch.MessageEncoder.PoC
             //};
             #endregion
 
-            byte[] flatten = result.SelectMany(@object => @object.ToByteArray()).ToArray();
+            byte[] flatten = result.SelectMany(@object => @object).ToArray();
             return flatten;
         }
 

@@ -15,7 +15,7 @@ namespace Sinch.MessageEncoder.PoC.Diagnostics
         }
 
         public long Execute(int times = 0)
-        {            
+        {
             long avg = 0;
             for (var i = 0; i < (times < 0 ? int.MaxValue : times); i++)
             {

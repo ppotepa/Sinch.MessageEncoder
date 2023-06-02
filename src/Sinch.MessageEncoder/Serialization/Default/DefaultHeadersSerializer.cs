@@ -1,13 +1,13 @@
-﻿using System;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
+using System;
 using System.Linq;
 
 namespace Sinch.MessageEncoder.Serialization.Default
 {
     public class DefaultHeadersSerializer : IHeadersSerializer
     {
-        public THeaders Deserialize<THeaders>(MessageHeaderTransport headersTransport) 
+        public THeaders Deserialize<THeaders>(MessageHeaderTransport headersTransport)
             where THeaders : MessageHeader, new()
         {
             return Deserialize(typeof(THeaders), headersTransport) as THeaders;
@@ -34,8 +34,8 @@ namespace Sinch.MessageEncoder.Serialization.Default
             return new[]
             {
                 headers.From,
-                headers.To, 
-                headers.Timestamp, 
+                headers.To,
+                headers.Timestamp,
                 headers.MessageType,
                 headers.HeadersLength,
                 headers.AdditionalHeaders

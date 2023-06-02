@@ -30,7 +30,7 @@ namespace Sinch.MessageEncoder.Factories.Serialization
 
         public static IHeadersSerializer CreateSerializer(Type headersType)
         {
-            if (headersType is null) 
+            if (headersType is null)
                 throw new ArgumentNullException(nameof(headersType));
 
             if (typeof(MessageHeader).IsAssignableFrom(headersType))

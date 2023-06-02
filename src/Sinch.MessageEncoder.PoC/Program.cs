@@ -39,22 +39,7 @@ namespace Sinch.MessageEncoder.PoC
 
         private static void Measure()
         {
-            byte[] binaryObject = new BinaryMessageBuilder
-            (
-                from: 1,
-                to: 2,
-                timestamp: 1685193094,
-                msgType: 1,
-                headersLength: new long[] { 2 +1, 2+1, 2+1, 3 * 16 }.Sum()
-            )
-            .AddHeader("test-header", (byte)  254)
-            .AddHeader("test-header-2", (byte) 100)
-            .AddHeader("test-header-3", (byte) 50)
-            .AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
-            .AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
-            .AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
-            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John" })
-            .Serialize();
+            byte[] binaryObject = GetBinaryObject();
 
             Message message = MessageFactory.Create(binaryObject);
             byte[] serialized = MessageFactory.Serialize(message);
@@ -63,6 +48,26 @@ namespace Sinch.MessageEncoder.PoC
             byte[] serialized2 = MessageFactory.Serialize(msg2);
 
             var equals = serialized.SequenceEqual(serialized2);
+        }
+
+        private static byte[] GetBinaryObject()
+        {
+            return new BinaryMessageBuilder
+                (
+                    from: 1,
+                    to: 2,
+                    timestamp: 1685193094,
+                    msgType: 1,
+                    headersLength: new long[] { 2 + 1, 2 + 1, 2 + 1, 3 * 16 }.Sum()
+                )
+                .AddHeader("test-header", (byte)254)
+                .AddHeader("test-header-2", (byte)100)
+                .AddHeader("test-header-3", (byte)50)
+                .AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
+                .AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
+                .AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
+                .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John" })
+                .Serialize();
         }
     }
 }

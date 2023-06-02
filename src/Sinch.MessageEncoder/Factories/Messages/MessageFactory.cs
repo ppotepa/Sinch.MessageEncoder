@@ -25,25 +25,21 @@ namespace Sinch.MessageEncoder.Factories.Messages
         {
             Message result = default;
             MessageTransport messageTransport = MessageTransport.FromSpan(messageBinary);
+            var target = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE];
 
-            if (messageTransport.HeaderTransportInfo.MSG_TYPE is 1)
+            if (target.BaseType != null)
             {
-                var target = MessageTypes[1];
+                var headersType = target.BaseType.GenericTypeArguments[0];
+                var payloadType = target.BaseType.GenericTypeArguments[1];
 
-                if (target.BaseType != null)
-                {
-                    var headersType = target.BaseType.GenericTypeArguments[0];
-                    var payloadType = target.BaseType.GenericTypeArguments[1];
+                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
+                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
 
-                    IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
-                    IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
+                var headers = headersSerializer.Deserialize(headersType, messageTransport.HeaderTransportInfo);
+                var payload = payloadSerializer.Deserialize(messageTransport.BinaryPayload, payloadType);
+                var targetGenericBaseType = typeof(Message<,>).MakeGenericType(headersType, payloadType);
 
-                    var headers = headersSerializer.Deserialize(headersType, messageTransport.HeaderTransportInfo);
-                    var payload = payloadSerializer.Deserialize(messageTransport.BinaryPayload, payloadType);
-                    var targetGenericBaseType = typeof(Message<,>).MakeGenericType(headersType, payloadType);
-
-                    result = Activator.CreateInstance(MessageTypesBinding[targetGenericBaseType], headers, payload) as Message;
-                }
+                result = Activator.CreateInstance(MessageTypesBinding[targetGenericBaseType], headers, payload) as Message;
             }
 
             return result;
@@ -52,11 +48,15 @@ namespace Sinch.MessageEncoder.Factories.Messages
         public static byte[] Serialize(Message message)
         {
             byte[] result = default;
+            Type target = MessageTypes[((MessageHeader)message.Headers).MessageType];
 
-            if (message is DefaultTextMessage)
+            if (target.BaseType != null)
             {
-                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(typeof(DefaultTextMessageHeaders));
-                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(typeof(DefaultTextMessagePayload));
+                var headersType = target.BaseType.GenericTypeArguments[0];
+                var payloadType = target.BaseType.GenericTypeArguments[1];
+
+                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
+                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
 
                 var headers = headersSerializer.Serialize(message.Headers as DefaultTextMessageHeaders);
                 var payload = payloadSerializer.Serialize(message.Payload as DefaultTextMessagePayload);

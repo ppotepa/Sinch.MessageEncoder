@@ -2,7 +2,7 @@
 
 namespace Sinch.MessageEncoder.Attributes
 {
-    public class MessageTypeAttribute : Attribute 
+    public class MessageTypeAttribute : Attribute
     {
         public byte MessageTypeCode { get; init; }
         public string Name { get; init; }

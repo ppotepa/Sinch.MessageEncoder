@@ -29,11 +29,10 @@ namespace Sinch.MessageEncoder.Serialization.Default
         {
             Payload @new = Activator.CreateInstance(payloadType) as Payload;
             var metadata = payloadType.GetProperties().Select(property => new
-                {
-                    Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
-                    Property = property
-                })
-                .ToList();
+            {
+                Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
+                Property = property
+            });
 
             metadata.First().Property.SetValue(@new, Encoding.ASCII.GetString(payloadBytes[2..payloadBytes.Length]));
             return @new;
@@ -43,25 +42,23 @@ namespace Sinch.MessageEncoder.Serialization.Default
         {
             if (payload is null)
             {
-                return new[] { new byte[]{}.Length.ToShortByteArray(), new byte[]{} }.SelectMany(bytes => bytes).ToArray();;
+                return new[] { new byte[] { }.Length.ToShortByteArray(), new byte[] { } }.SelectMany(bytes => bytes).ToArray(); ;
             }
             else
             {
                 var metadata = payload.GetType().GetProperties().Select(property => new
-                    {
-                        Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
-                        Property = property
-                    })
-                    .ToList();
-
-                var result = metadata.ToList().Select(data =>
+                {
+                    Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
+                    Property = property
+                })
+                .Select(data =>
                 {
                     var array = data.Property.GetValue(payload).ToByteArray();
                     var result = new[] { array.Length.ToShortByteArray(), array }.SelectMany(bytes => bytes);
                     return result;
-                }).ToArray();
+                });
 
-                return result.SelectMany(bytes => bytes).ToArray();
+                return metadata.SelectMany(bytes => bytes).ToArray();
             }
         }
     }
