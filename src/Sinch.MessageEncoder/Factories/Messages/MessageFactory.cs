@@ -11,32 +11,39 @@ using System.Reflection;
 
 namespace Sinch.MessageEncoder.Factories.Messages
 {
-    public class MessageFactory
+    internal abstract class MessageFactory
     {
-        private static object _messageTypes = AppDomain
-        .CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>
+        private static readonly Dictionary<byte, Type> MessageTypes = AppDomain.CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>
         (
-            (IEnumerable<Type> types) => types.ToDictionary(type => type.GetCustomAttribute<MessageTypeAttribute>()!.MessageTypeCode, 
-            (Type type) => type)
+            types => types.ToDictionary(type => type.GetCustomAttribute<MessageTypeAttribute>()!.MessageTypeCode, type => type)
         );
 
-        public static Message Create(MessageTransport messageTransport)
+        private static Dictionary<Type, Type> MessageTypesBinding
+            => AppDomain.CurrentDomain.GetSubclassesOfOpenGeneric(typeof(Message<,>));
+
+        public static Message Create(byte[] messageBinary)
         {
             Message result = default;
+            MessageTransport messageTransport = MessageTransport.FromSpan(messageBinary);
 
             if (messageTransport.HeaderTransportInfo.MSG_TYPE is 1)
             {
-                IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(typeof(DefaultTextMessageHeaders));
-                IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(typeof(DefaultTextMessagePayload));
+                var target = MessageTypes[1];
 
-                DefaultTextMessageHeaders headers = headersSerializer.Deserialize<DefaultTextMessageHeaders>(messageTransport.HeaderTransportInfo);
-                DefaultTextMessagePayload payload = payloadSerializer.Deserialize<DefaultTextMessagePayload>(messageTransport.BinaryPayload);
-
-                result = new DefaultTextMessage
+                if (target.BaseType != null)
                 {
-                    Headers = headers,
-                    Payload = payload
-                };
+                    var headersType = target.BaseType.GenericTypeArguments[0];
+                    var payloadType = target.BaseType.GenericTypeArguments[1];
+
+                    IHeadersSerializer headersSerializer = HeadersSerializerFactory.CreateSerializer(headersType);
+                    IPayloadSerializer payloadSerializer = PayloadSerializerFactory.CreateSerializer(payloadType);
+
+                    var headers = headersSerializer.Deserialize(headersType, messageTransport.HeaderTransportInfo);
+                    var payload = payloadSerializer.Deserialize(messageTransport.BinaryPayload, payloadType);
+                    var targetGenericBaseType = typeof(Message<,>).MakeGenericType(headersType, payloadType);
+
+                    result = Activator.CreateInstance(MessageTypesBinding[targetGenericBaseType], headers, payload) as Message;
+                }
             }
 
             return result;

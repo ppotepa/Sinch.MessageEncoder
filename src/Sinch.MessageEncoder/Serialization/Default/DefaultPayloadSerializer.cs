@@ -10,7 +10,7 @@ namespace Sinch.MessageEncoder.Serialization.Default
 {
     public class DefaultPayloadSerializer : IPayloadSerializer
     {
-        public TPayload Deserialize<TPayload>(Span<byte> payload) where TPayload : Payload, new()
+        public TPayload Deserialize<TPayload>(Span<byte> payloadBytes) where TPayload : Payload, new()
         {
             TPayload @new = new TPayload();
 
@@ -21,7 +21,21 @@ namespace Sinch.MessageEncoder.Serialization.Default
             })
             .ToList();
 
-            metadata.First().Property.SetValue(@new, Encoding.ASCII.GetString(payload[2..payload.Length]));
+            metadata.First().Property.SetValue(@new, Encoding.ASCII.GetString(payloadBytes[2..payloadBytes.Length]));
+            return @new;
+        }
+
+        public Payload Deserialize(Span<byte> payloadBytes, Type payloadType)
+        {
+            Payload @new = Activator.CreateInstance(payloadType) as Payload;
+            var metadata = payloadType.GetProperties().Select(property => new
+                {
+                    Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
+                    Property = property
+                })
+                .ToList();
+
+            metadata.First().Property.SetValue(@new, Encoding.ASCII.GetString(payloadBytes[2..payloadBytes.Length]));
             return @new;
         }
 

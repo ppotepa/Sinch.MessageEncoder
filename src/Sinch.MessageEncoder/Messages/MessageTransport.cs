@@ -40,7 +40,6 @@ public ref struct MessageTransport
 
             if (currentHeaderLength > 0)
             {
-                //transport.HeaderTransportInfo.AddHeader(currentHeader.ToArray());
                 index += 2 + currentHeaderLength;
             }
             else break;

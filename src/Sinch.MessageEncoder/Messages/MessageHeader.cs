@@ -1,16 +1,12 @@
-﻿namespace Sinch.MessageEncoder.Messages;
-
-public class MessageHeader
+﻿namespace Sinch.MessageEncoder.Messages
 {
-    private byte _headerCount = 0;
-    public MessageHeader()
+    public class MessageHeader
     {
+        public object AdditionalHeaders { get; internal set; }
+        public long From { get; internal set; }
+        public long HeadersLength { get; internal set; }
+        public byte MessageType { get; internal set; }
+        public long Timestamp { get; internal set; }
+        public long To { get; internal set; }
     }
-
-    public object AdditionalHeaders { get; init; }
-    public long From { get; init; }
-    public long HeadersLength { get; init; }
-    public byte MessageType { get; init; }
-    public long Timestamp { get; init; }
-    public long To { get; init; }
 }

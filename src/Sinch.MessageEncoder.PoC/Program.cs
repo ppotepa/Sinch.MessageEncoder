@@ -56,14 +56,13 @@ namespace Sinch.MessageEncoder.PoC
             .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John" })
             .Serialize();
 
-            MessageTransport messageTransport = MessageTransport.FromSpan(binaryObject);
-            Message message = MessageFactory.Create(messageTransport);
+            Message message = MessageFactory.Create(binaryObject);
+            byte[] serialized = MessageFactory.Serialize(message);
 
-            object a = message.Payload;
-            object payload = message.Payload;
+            Message msg2 = MessageFactory.Create(serialized);
+            byte[] serialized2 = MessageFactory.Serialize(msg2);
 
-            var serialized = MessageFactory.Serialize(message);
-            var equals = serialized.SequenceEqual(binaryObject);
+            var equals = serialized.SequenceEqual(serialized2);
         }
     }
 }
