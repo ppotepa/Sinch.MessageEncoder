@@ -1,5 +1,9 @@
-﻿namespace Sinch.MessageEncoder.Messages.Default.Text;
+﻿using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Serialization.Default;
 
+namespace Sinch.MessageEncoder.Messages.Default.Text;
+
+[UseSerializer(typeof(DefaultHeaderSerializer))]
 public class DefaultTextMessageHeaders : MessageHeader
 {
     public DefaultTextMessageHeaders()

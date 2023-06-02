@@ -6,7 +6,28 @@ namespace Sinch.MessageEncoder.Extensions
 {
     public static class ObjectExtensions
     {
-        private static byte[] ToByteArray(this int @object)
+        private static byte[] __toByteArrayByte(this byte @object)
+        {
+            byte[] bytes = new[]
+            {
+                (byte)@object,
+            };
+
+            return bytes;
+        }
+
+        private static byte[] __toByteArrayShort(this short @object)
+        {
+            byte[] bytes = new[]
+            {
+                (byte)@object,
+                (byte)(@object >> 8)
+            };
+
+            return bytes;
+        }
+
+        private static byte[] __toByteArrayInt(this int @object)
         {
             byte[] bytes = new[]
             {
@@ -19,28 +40,7 @@ namespace Sinch.MessageEncoder.Extensions
             return bytes;
         }
 
-        private static byte[] ToByteArray(this short @object)
-        {
-            byte[] bytes = new[]
-            {
-                (byte)@object,
-                (byte)(@object >> 8)
-            };
-
-            return bytes;
-        }
-
-        private static byte[] ToByteArray(this byte @object)
-        {
-            byte[] bytes = new[]
-            {
-                (byte)@object,
-            };
-
-            return bytes;
-        }
-
-        private static byte[] ToByteArray(this long @object)
+        private static byte[] __toBytearrayLong(this long @object)
         {
             byte[] bytes = new[]
             {
@@ -57,7 +57,7 @@ namespace Sinch.MessageEncoder.Extensions
             return bytes;
         }
 
-        private static byte[] ToByteArray(this string @object)
+        private static byte[] __toByteArrayString(this string @object)
         {
             byte[] bytes = new byte[@object.Length];
             for (int index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) { };
@@ -66,12 +66,14 @@ namespace Sinch.MessageEncoder.Extensions
 
         public static byte[] ToByteArray(this object @object) => @object switch
         {
-            long @long => ToByteArray(@long),
-            int @int => ToByteArray(@int),
-            short @short => ToByteArray(@short),
-            byte @byte => ToByteArray(@byte),
-            string @string => ToByteArray(@string),
-            null => Array.Empty<byte>()
+            long @long => __toBytearrayLong(@long),
+            int @int => __toByteArrayInt(@int),
+            short @short => __toByteArrayShort(@short),
+            byte @byte => __toByteArrayByte(@byte),
+            string @string => __toByteArrayString(@string),
+            byte[] @bytes => @bytes,
+            null => Array.Empty<byte>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, "null")
         };
 
         public static byte[] ToShortByteArray(this int @object)
@@ -82,7 +84,7 @@ namespace Sinch.MessageEncoder.Extensions
             object target = (short)@object;
             return target switch
             {
-                short @short => ToByteArray(@short),
+                short @short => __toByteArrayShort(@short),
             };
         }
 

@@ -1,26 +1,16 @@
-﻿namespace Sinch.MessageEncoder.Messages
+﻿using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Serialization.Default;
+
+namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Payload
     {
-        protected Payload()
-        {
-        }
+        public static Payload Empty => new EmptyPayload();
+    }
 
-        public virtual object Serialize()
-        {
-            //object order = new object();
-            //var result = order.Select
-            //(
-            //    property =>
-            //    {
-            //        byte[] byteArr = property.ToByteArray();
-            //        return new[] { byteArr.Length.ToShortByteArray(), byteArr };
-            //    }
-            //);
+    [UseSerializer(typeof(DefaultPayloadSerializer))]
+    internal class EmptyPayload : Payload
+    {
 
-            //return result.SelectMany(bytes => bytes);
-
-            return default;
-        }
     }
 }

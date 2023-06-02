@@ -13,5 +13,5 @@ public class SerializeAsAttribute : Attribute
     }
 
     public int Order { get; set; }
-    public Type Serializer { get; set; }
+    public Type TargetType { get; set; }
 }

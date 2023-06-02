@@ -1,52 +1,48 @@
-﻿using System;
-
-namespace Sinch.MessageEncoder.Messages
+﻿namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
-        private readonly MessageHeaderTransport _headerTransport;
-        protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan)
+        protected object _headers;
+        protected object _payload;
+
+        public virtual object Headers
         {
-            this._headerTransport = headerTransport;
+            get => _headers;
+            set => _headers = value;
         }
 
-        public object Payload { get; set; }
-        public object Headers { get; set; }
+        public virtual object Payload
+        {
+            get => _payload;
+            set => _payload = value;
+        }
     }
 
-    public abstract class Message<THeadersType, TPayloadType> : Message 
+    public abstract class Message<THeadersType, TPayloadType> : Message
         where TPayloadType : Payload, new()
         where THeadersType : MessageHeader, new()
     {
-        private THeadersType _headers;
-        private TPayloadType _payload;
-
-        protected Message(MessageHeaderTransport headerTransport, Span<byte> payloadSpan) : base(headerTransport, payloadSpan)
-        {
-        }
 
         public MessageHeader Header { get; init; }
-        public new THeadersType Headers
+        public override THeadersType Headers
         {
             get
             {
-                if (_headers is not null) return _headers;
-                _headers = new THeadersType();
-                return _headers;
+                if (base.Headers is not null) return (THeadersType)base.Headers;
+                base.Headers = new THeadersType();
+                return (THeadersType)base.Headers;
             }
-            set => base.Payload = value;
         }
 
         public abstract int HeadersCount { get; }
-        public new TPayloadType Payload
+        public override TPayloadType Payload
         {
             get
             {
-                if (_payload is not null) return _payload;
-                _payload = new TPayloadType();
-                return _payload;
+                if (base.Payload is not null) return (TPayloadType)base.Payload;
+                Payload = new TPayloadType();
+                return Payload;
             }
-            set => base.Payload = value;
         }
     }
 }

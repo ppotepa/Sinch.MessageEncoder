@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.Json.Serialization;
+using Sinch.MessageEncoder.Factories.Messages;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -47,27 +49,19 @@ namespace Sinch.MessageEncoder.PoC
                 headersLength: new long[] { 24, 2 + 1, 2 + 1, 2 + 1, 2, 3 }.Sum()
             )
             .AddHeader("test-header", (byte)  254)
-            .AddHeader("test-header2", (byte) 100)
-            .AddHeader("test-header3", (byte) 50)
-            .AddHeader("test-header5", "AAAAAAAAAAAAAAAA")
-            .AddHeader("test-header6", "BBBBBBBBBBBBBBBB")
+            .AddHeader("test-header-2", (byte) 100)
+            .AddHeader("test-header-3", (byte) 50)
+            .AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
+            .AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
+            .AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
             .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John" })
             .Serialize();
 
             MessageTransport messageTransport = MessageTransport.FromSpan(binaryObject);
-            Message message = MessageFactory(messageTransport);
+            Message message = MessageFactory.Create(messageTransport);
 
             object a = message.Payload;
             object payload = message.Payload;
-        }
-
-        static Message MessageFactory(MessageTransport messageTransport)
-        {
-            return messageTransport.HeaderTransportInfo.MSG_TYPE switch
-            {
-                1 => new DefaultTextMessage(messageTransport.HeaderTransportInfo, messageTransport.BinaryPayload),
-                _ => default
-            };
         }
     }
 }

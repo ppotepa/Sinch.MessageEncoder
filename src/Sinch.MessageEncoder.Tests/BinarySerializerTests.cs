@@ -1,23 +1,22 @@
 using NUnit.Framework;
+using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.PoC;
-using Sinch.MessageEncoder.PoC.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using ObjectExtensions = Sinch.MessageEncoder.Extensions.ObjectExtensions;
 
 // ReSharper disable InconsistentNaming
-
 namespace Sinch.MessageEncoder.Tests
 {
     public class Tests
     {
-        const byte ONE = 1;
-        const short THOUSAND = 1_000;
-        const int MILLION = 1_000_000;
         const long BILLION = 1_000_000_000;
-        const long TRILLION = 1_000_000_000_000;
+        const int MILLION = 1_000_000;
+        const byte ONE = 1;
         private const string STRING_32_BYTES = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        const short THOUSAND = 1_000;
+        const long TRILLION = 1_000_000_000_000;
 
         private readonly byte[] assertBytes =
         {
@@ -42,7 +41,7 @@ namespace Sinch.MessageEncoder.Tests
             2, 0, 0, 0, 0, 0, 0, 0,                     //  TO                  [8] bytes - translates to [2]
             134, 1, 114, 100, 0, 0, 0, 0,               //  TIMESTAMP           [8] bytes - translates to { 01.01.0001 00:02:48 }
             1,                                          //  MSG_TYPE            [1] byte  - translates to [1] 
-            0, 0, 0, 0, 0, 0, 0, 0                      //  MSG_TYPE            [1] byte  - translates to [1] 
+            0, 0, 0, 0, 0, 0, 0, 0                      //  HEADERS_LENGTH      [8] bytes - translates to [0] 
         };
 
         private readonly object[] defaultSerializerInput = {
@@ -80,8 +79,8 @@ namespace Sinch.MessageEncoder.Tests
                 .Serialize();
 
             bool[] testAssertionConditions = {
-                assertBytes.SequenceEqual(binaryMessageBuilder),        // Check against our BinaryBuilder.
-                assertBytes.SequenceEqual(defaultSerializerResult),     // Check against our ToByteArray() Extension Method.
+                assertBytes.SequenceEqual(binaryMessageBuilder),        // Check against BinaryBuilder.
+                assertBytes.SequenceEqual(defaultSerializerResult),     // Check against ToByteArray() Extension Method.
                 assertBytes.SequenceEqual(binarySerializerResult)       // Check against Built-In BitConverter.
             };
 

@@ -12,16 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="testbinaries\bytes.bin">
+    <None Update="Binaries\bytes.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="testbinaries\deflate.zlib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="testbinaries\example-header.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="testbinaries\test_message_0.bin">
+    <None Update="Binaries\deflate.zlib">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="testbinaries\test_message_0.zip">

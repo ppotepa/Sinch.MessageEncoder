@@ -1,5 +1,6 @@
-﻿using Sinch.MessageEncoder.Messages;
-using Sinch.MessageEncoder.PoC.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using Sinch.MessageEncoder.Factories.Serialization;
+using Sinch.MessageEncoder.Messages;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,6 +11,7 @@ namespace Sinch.MessageEncoder.PoC
     {
         private readonly List<KeyValuePair<string, object>> Headers = new();
         private Payload Payload;
+
         public BinaryMessageBuilder(long from, long to, long timestamp, byte msgType, long headersLength)
         {
             this.From = from;
@@ -20,8 +22,8 @@ namespace Sinch.MessageEncoder.PoC
         }
 
         public long From { get; set; }
-        public byte MsgType { get; set; }
         public long HeadersLength { get; set; }
+        public byte MsgType { get; set; }
         public long Timestamp { get; set; }
         public long To { get; set; }
 
@@ -39,7 +41,9 @@ namespace Sinch.MessageEncoder.PoC
         }
 
         public byte[] Serialize()
-        {
+        {            
+            Payload ??= Payload.Empty;
+            
             byte[] fromByteArray = From.ToByteArray();
             byte[] toByteArray = To.ToByteArray();
             byte[] timestampByteArray = Timestamp.ToByteArray();
@@ -52,9 +56,10 @@ namespace Sinch.MessageEncoder.PoC
             })
             .SelectMany(bytes => bytes).ToArray();
 
-            // ReSharper disable once RedundantCast - in this case it is not Redunant, because it makes our byteArray 8-byte long instead of 4-byte
+            // ReSharper disable once RedundantCast - in this case it is not Redunant,
+            // because it makes our byteArray 8-byte long instead of 4-byte
             byte[] headersByteArrayLength = ((long)(headersByteArray.Length)).ToByteArray();
-            byte[] payloadByteArray = (byte[])Payload?.Serialize() ?? new byte[]{};
+            byte[] payloadByteArray = PayloadSerializerFactory.CreateSerializer(Payload?.GetType()).Serialize(Payload);
 
             var result = new object[]
             {
