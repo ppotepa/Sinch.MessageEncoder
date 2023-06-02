@@ -22,8 +22,6 @@
         where TPayloadType : Payload, new()
         where THeadersType : MessageHeader, new()
     {
-
-        public MessageHeader Header { get; init; }
         public override THeadersType Headers
         {
             get

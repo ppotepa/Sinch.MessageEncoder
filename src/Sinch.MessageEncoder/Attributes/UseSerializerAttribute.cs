@@ -10,6 +10,10 @@ namespace Sinch.MessageEncoder.Attributes
             Serializer = serializer;
         }
 
+        public UseSerializerAttribute()
+        {
+        }
+
         public Type Serializer { get; set; }
     }
 }

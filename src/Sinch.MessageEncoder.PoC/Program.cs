@@ -1,12 +1,11 @@
-﻿using Sinch.MessageEncoder.Messages;
+﻿using Sinch.MessageEncoder.Factories.Messages;
+using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
 using Sinch.MessageEncoder.PoC.Diagnostics;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.Json.Serialization;
-using Sinch.MessageEncoder.Factories.Messages;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -46,7 +45,7 @@ namespace Sinch.MessageEncoder.PoC
                 to: 2,
                 timestamp: 1685193094,
                 msgType: 1,
-                headersLength: new long[] { 24, 2 + 1, 2 + 1, 2 + 1, 2, 3 }.Sum()
+                headersLength: new long[] { 2 +1, 2+1, 2+1, 3 * 16 }.Sum()
             )
             .AddHeader("test-header", (byte)  254)
             .AddHeader("test-header-2", (byte) 100)
@@ -62,6 +61,9 @@ namespace Sinch.MessageEncoder.PoC
 
             object a = message.Payload;
             object payload = message.Payload;
+
+            var serialized = MessageFactory.Serialize(message);
+            var equals = serialized.SequenceEqual(binaryObject);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     [UseSerializer(typeof(DefaultPayloadSerializer))]
     public class DefaultTextMessagePayload : Payload
     {
-        [SerializeAs(typeof(string), Order = 1)]
+        [MessageProperty(TargetType = typeof(string), Order = 1, PropertyName=nameof(TextMessageBody))]
         public string TextMessageBody { get; set; }
     }
 }

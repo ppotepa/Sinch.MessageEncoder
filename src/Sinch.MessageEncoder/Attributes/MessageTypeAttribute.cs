@@ -4,13 +4,17 @@ namespace Sinch.MessageEncoder.Attributes
 {
     public class MessageTypeAttribute : Attribute 
     {
-        public readonly byte MessageCode;
-        public readonly string Name;
+        public byte MessageTypeCode { get; init; }
+        public string Name { get; init; }
 
-        public MessageTypeAttribute(byte messageCode, string name)
+        public MessageTypeAttribute(byte messageTypeCode, string name)
         {
-            this.MessageCode = messageCode;
+            this.MessageTypeCode = messageTypeCode;
             this.Name = name;
+        }
+
+        public MessageTypeAttribute()
+        {
         }
     }
 }

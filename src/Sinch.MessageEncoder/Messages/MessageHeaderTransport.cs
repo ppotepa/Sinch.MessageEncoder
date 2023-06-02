@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System;
 // ReSharper disable InconsistentNaming
 
 namespace Sinch.MessageEncoder.Messages;
@@ -53,11 +51,5 @@ public struct MessageHeaderTransport
             headersLength: headersLength,
             headerBytes: messageSpan.GetAllHeaders(headersLength)
         );
-    }
-
-    internal void AddHeader(byte[] byteArray)
-    {
-        HEADER_BYTES = HEADER_BYTES.Concat(byteArray).ToArray();
-        HEADERS_COUNT++;
     }
 }

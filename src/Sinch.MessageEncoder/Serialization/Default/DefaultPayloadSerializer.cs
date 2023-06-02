@@ -5,8 +5,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Object = System.Object;
 
 namespace Sinch.MessageEncoder.Serialization.Default
 {
@@ -18,7 +16,7 @@ namespace Sinch.MessageEncoder.Serialization.Default
 
             var metadata = typeof(TPayload).GetProperties().Select(property => new
             {
-                Attribute = property.GetCustomAttribute(typeof(SerializeAsAttribute)) as SerializeAsAttribute,
+                Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
                 Property = property
             })
             .ToList();
@@ -37,7 +35,7 @@ namespace Sinch.MessageEncoder.Serialization.Default
             {
                 var metadata = payload.GetType().GetProperties().Select(property => new
                     {
-                        Attribute = property.GetCustomAttribute(typeof(SerializeAsAttribute)) as SerializeAsAttribute,
+                        Attribute = property.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute,
                         Property = property
                     })
                     .ToList();
