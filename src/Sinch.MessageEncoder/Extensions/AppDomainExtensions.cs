@@ -17,7 +17,7 @@ internal static class AppDomainExtensions
         MessageOpenGeneric = typeof(Message<,>);
     }
 
-    public static IEnumerable<Type> GetSubclassesOf<TType>(this AppDomain @this) where TType : class 
+    public static IEnumerable<Type> GetSubclassesOf<TType>(this AppDomain @this) where TType : class
         => Types.Where(type => type.IsSubclassOf(typeof(TType)) && type.IsAbstract is false);
 
     public static TCollection GetSubclassesOf<TType, TCollection>(this AppDomain @this, Func<IEnumerable<Type>, TCollection> factory)

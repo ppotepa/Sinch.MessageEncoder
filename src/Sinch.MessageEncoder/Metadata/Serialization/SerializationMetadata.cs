@@ -1,5 +1,5 @@
-﻿using System;
-using Sinch.MessageEncoder.Attributes;
+﻿using Sinch.MessageEncoder.Attributes;
+using System;
 using System.Reflection;
 
 namespace Sinch.MessageEncoder.Metadata.Serialization

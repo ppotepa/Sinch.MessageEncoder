@@ -47,11 +47,11 @@ namespace Sinch.MessageEncoder.PoC
             ArrangeBytes
             (
                 out var fromByteArray,
-                out var toByteArray, 
-                out var timestampByteArray, 
-                out var msgTypeByteArray, 
-                out var headersByteArray, 
-                out var headersByteArrayLength, 
+                out var toByteArray,
+                out var timestampByteArray,
+                out var msgTypeByteArray,
+                out var headersByteArray,
+                out var headersByteArrayLength,
                 out var payloadByteArray
             );
 

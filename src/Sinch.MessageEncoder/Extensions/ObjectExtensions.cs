@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -49,7 +48,7 @@ namespace Sinch.MessageEncoder.Extensions
         private static byte[] __toByteArrayString(this string @object)
         {
             var bytes = new byte[@object.Length];
-            for (var index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]);
+            for (var index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) ;
             return bytes;
         }
 
@@ -66,6 +65,16 @@ namespace Sinch.MessageEncoder.Extensions
                 null => Array.Empty<byte>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, null)
             };
+        }
+
+        public static byte ToInt8(this byte[] @object)
+        {
+            return @object[0];
+        }
+
+        public static byte ToInt8(this Span<byte> @object)
+        {
+            return @object[0];
         }
 
         public static short ToInt16(this byte[] @object)

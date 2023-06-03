@@ -27,7 +27,7 @@ namespace Sinch.MessageEncoder.PoC
         //    return span;
         //}
 
-        private static string LONG_STRING = string.Join("", Enumerable.Range(1, 16_000_000).Select(x => "A"));
+        private static string LONG_STRING => string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 16)).Select(x => "A"));
 
         static void Main(string[] args)
         {
@@ -90,7 +90,7 @@ namespace Sinch.MessageEncoder.PoC
             .AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
             .AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
             .AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
-            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John", TextMessageBodyExtended = LONG_STRING, Replies = 32})
+            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John", TextMessageBodyExtended = LONG_STRING, Replies = 32 })
             .Serialize();
         }
     }

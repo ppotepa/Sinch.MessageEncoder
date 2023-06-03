@@ -25,7 +25,8 @@ namespace Sinch.MessageEncoder.Factories.Serialization
 
         public static IPayloadSerializer CreatePayloadSerializer(Type payloadType)
         {
-            if (payloadType is null) throw new ArgumentNullException(nameof(payloadType));
+            if (payloadType is null) 
+                throw new ArgumentNullException(nameof(payloadType));
 
             return typeof(Payload).IsAssignableFrom(payloadType)
                 ? Activator.CreateInstance(PayloadSerializers[payloadType]) as IPayloadSerializer

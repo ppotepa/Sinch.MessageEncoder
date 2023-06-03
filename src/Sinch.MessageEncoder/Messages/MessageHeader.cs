@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System.Linq;
 
 namespace Sinch.MessageEncoder.Messages
 {
@@ -28,11 +28,11 @@ namespace Sinch.MessageEncoder.Messages
 
         internal byte[] DefaultBytes => new[]
         {
-            From, 
-            To, 
+            From,
+            To,
             Timestamp,
-            MessageType, 
-            HeadersLength, 
+            MessageType,
+            HeadersLength,
             AdditionalHeaders
         }
         .SelectMany(@object => @object.ToByteArray())

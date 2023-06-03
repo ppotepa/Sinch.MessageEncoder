@@ -1,14 +1,11 @@
-﻿using Sinch.MessageEncoder.Attributes;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
+using Sinch.MessageEncoder.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
-using Sinch.MessageEncoder.Serialization;
 
 namespace Sinch.MessageEncoder.Factories.Messages
 {
@@ -17,12 +14,12 @@ namespace Sinch.MessageEncoder.Factories.Messages
         private static readonly Dictionary<byte, Type> MessageTypes = default;
         private static readonly Dictionary<Type, Type> MessageTypesBinding = default;
 
-        private static Dictionary<byte, Type> Factory(IEnumerable<Type> types) 
+        private static Dictionary<byte, Type> Factory(IEnumerable<Type> types)
             => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
 
         static MessageFactory()
         {
-            
+
             MessageTypes = AppDomain.CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>(Factory);
             MessageTypesBinding = AppDomain.CurrentDomain.GetSubclassesOfOpenGeneric(typeof(Message<,>));
         }
@@ -31,8 +28,8 @@ namespace Sinch.MessageEncoder.Factories.Messages
         {
             var serializers = GetSerializers
             (
-                messageBinary: messageBinary, 
-                targetBase: out var target, 
+                messageBinary: messageBinary,
+                targetBase: out var target,
                 messageTransport: out var messageTransport
             );
 
@@ -48,7 +45,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
             as Message;
         }
 
-        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(byte[] messageBinary, 
+        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(byte[] messageBinary,
             out Type targetBase, out MessageTransport messageTransport)
         {
             messageTransport = MessageTransport.FromSpan(messageBinary);
@@ -58,7 +55,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
 
             return (
                 headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
+                payload: SerializersFactory.CreateSerializer(targetBase.GenericTypeArguments[1])
             );
         }
 
@@ -84,7 +81,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
 
             return (
                 headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
+                payload: SerializersFactory.CreateSerializer(targetBase.GenericTypeArguments[1])
             );
         }
     }
