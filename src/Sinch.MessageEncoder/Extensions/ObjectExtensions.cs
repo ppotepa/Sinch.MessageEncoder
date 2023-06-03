@@ -73,14 +73,29 @@ namespace Sinch.MessageEncoder.Extensions
             return (short)(@object[0] | (@object[1] << 8));
         }
 
+        public static short ToInt16(this Span<byte> @object)
+        {
+            return (short)(@object[0] | (@object[1] << 8));
+        }
+
         public static int ToInt32(this byte[] @object)
         {
             return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
         }
 
-        public static byte[] ToShortByteArray(this int @object)
+        public static int ToInt32(this Span<byte> @object)
         {
-            return __toByteArrayShort((short)@object);
+            return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+        }
+
+        public static long ToInt64(this byte[] @object)
+        {
+            return BitConverter.ToInt64(@object);
+        }
+
+        public static long ToInt64(this Span<byte> @object)
+        {
+            return BitConverter.ToInt64(@object);
         }
 
         public static IEnumerable<byte> GetBytes(this object data)

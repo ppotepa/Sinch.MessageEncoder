@@ -71,8 +71,6 @@ namespace Sinch.MessageEncoder.PoC
 
             var result1 = payloadSerializer.Serialize(message.Payload);
             var result2 = headersSerializer.Serialize(message.Headers);
-
-            //var result_3 =  new[] { result1, result2 }.SelectMany(bytes => bytes).ToArray();
         };
 
 

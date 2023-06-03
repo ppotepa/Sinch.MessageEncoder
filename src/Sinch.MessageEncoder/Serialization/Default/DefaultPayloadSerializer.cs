@@ -1,14 +1,13 @@
 ﻿using Sinch.MessageEncoder.Attributes;
 using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
+using Sinch.MessageEncoder.Metadata.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Sinch.MessageEncoder.Metadata.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sinch.MessageEncoder.Serialization.Default
 {
@@ -40,7 +39,9 @@ namespace Sinch.MessageEncoder.Serialization.Default
         public Payload Deserialize(Span<byte> payloadSpan, Type payloadType)
         {
             IEnumerable<SerializationMetadata> metadata = payloadType.GetProperties().Select(SerializationMetadata.Create);
+            
             object payload = Activator.CreateInstance(payloadType);
+
             DeserializeProperties(payloadSpan, metadata, payload);
             return payload as Payload;
         }
@@ -49,19 +50,19 @@ namespace Sinch.MessageEncoder.Serialization.Default
             where TPayload : Payload
         {
             List<byte> listBytes = new List<byte>();
-            if (payload is null) return EmptyBytesResult;
 
-            PayloadPropertiesMap[payload.GetType()].Select(SerializationMetadata.Create)
-            .Select(data => 
+            if (payload is null) 
+                return EmptyBytesResult;
+
+            var properties = PayloadPropertiesMap[payload.GetType()];
+            var metadata = properties.Select(SerializationMetadata.Create);
+            
+            foreach (var data in metadata)
             {
-                byte[] array = data.PropertyInfo.GetValue(payload).ToByteArray();
-                listBytes.AddRange(array.Length.ToShortByteArray());
+                var array = data.PropertyInfo.GetValue(payload).ToByteArray();
+                listBytes.AddRange((array.Length).ToByteArray());
                 listBytes.AddRange(array);
-
-                return new byte[] { };
-            })
-            .SelectMany(bytes => bytes)
-            .ToArray();
+            }
 
             return listBytes.ToArray();
         }
@@ -70,10 +71,10 @@ namespace Sinch.MessageEncoder.Serialization.Default
         {
             int start = 0;
 
-            foreach (var data in metadata)
+            foreach (SerializationMetadata data in metadata)
             {
-                short currentPropertyLength = payloadBytes.Slice(start, 2).ToArray().ToInt16();
-                byte[] currentPropertyBytes = payloadBytes.Slice(start + 2, currentPropertyLength).ToArray();
+                var currentPropertyLength = payloadBytes.Slice(start, 4).ToInt32();
+                var currentPropertyBytes = payloadBytes.Slice(start + 4, currentPropertyLength);
 
                 if (data.Attribute.TargetType == typeof(string))
                     data.PropertyInfo.SetValue(payload, Encoding.ASCII.GetString(bytes: currentPropertyBytes));
@@ -81,7 +82,10 @@ namespace Sinch.MessageEncoder.Serialization.Default
                 if (data.Attribute.TargetType == typeof(int))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt32());
 
-                start += 2 + currentPropertyLength;
+                if (data.Attribute.TargetType == typeof(short))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt16());
+
+                start += 4 + currentPropertyLength;
             }
         }
     }

@@ -29,7 +29,7 @@ namespace Sinch.MessageEncoder.Tests
             2, 0,   100, 0,                             //  HEADER_2            [2 bytes, 2 bytes] - translates to - 100 as (short)
             4, 0,   100, 0, 0, 0,                       //  HEADER_3            [2 bytes, 4 bytes] - translates to - 100 as (int)
             8, 0,   100, 0, 0, 0, 0, 0, 0, 0,           //  HEADER_4            [2 bytes, 8 bytes] - translates to - 100 as (long)
-            32, 0,  97, 97, 97, 97, 97, 97, 97, 97,     //  HEADER_4            [2 bytes, 32 bytes (string)] - translates to string "a..."[32]
+            32, 0,  97, 97, 97, 97, 97, 97, 97, 97,     //  HEADER_5            [2 bytes, 32 bytes (string)] - translates to string "a..."[32]
             97, 97, 97, 97, 97, 97, 97, 97,
             97, 97, 97, 97, 97, 97, 97, 97,
             97, 97, 97, 97, 97, 97, 97, 97
