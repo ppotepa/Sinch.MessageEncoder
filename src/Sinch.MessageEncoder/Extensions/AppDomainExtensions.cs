@@ -8,48 +8,30 @@ namespace Sinch.MessageEncoder.Extensions;
 
 internal static class AppDomainExtensions
 {
-    private static List<Type> _types = AppDomain.CurrentDomain.GetAssemblies()
-        .SelectMany(assembly => assembly.GetTypes())
-        .ToList();
+    private static readonly IEnumerable<Type> Types = default;
+    private static readonly Type MessageOpenGeneric = default;
 
-    public static IEnumerable<Type> GetSubclassesOf<TType>(this AppDomain @this) where TType : class
+    static AppDomainExtensions()
     {
-        return _types.Where(type => type.IsSubclassOf(typeof(TType)) && type.IsAbstract is false);
+        Types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.GetTypes());
+        MessageOpenGeneric = typeof(Message<,>);
     }
+
+    public static IEnumerable<Type> GetSubclassesOf<TType>(this AppDomain @this) where TType : class 
+        => Types.Where(type => type.IsSubclassOf(typeof(TType)) && type.IsAbstract is false);
 
     public static TCollection GetSubclassesOf<TType, TCollection>(this AppDomain @this, Func<IEnumerable<Type>, TCollection> factory)
         where TType : class
         where TCollection : class, ICollection
     {
-        var types = @this.GetSubclassesOf<TType>();
-        var result = factory(types);
-        return result;
+        return factory(@this.GetSubclassesOf<TType>());
     }
 
-    public static Dictionary<Type, Type> GetSubclassesOfOpenGeneric(this AppDomain @this, Type openGenericType)
-    {
-        var related = _types.Select(type => new { type, baseType = type.BaseType })
-            .Where
-            (
-                pair => pair.type.IsAbstract is false && 
-                pair.type.IsInterface is false &&
-                pair.baseType is { IsGenericType: true } &&
-                pair.baseType.GetGenericTypeDefinition() == openGenericType
-            )
-            .Select(pair => pair.type)
+    public static Dictionary<Type, Type> GetSubclassesOfOpenGeneric(this AppDomain _, Type openGenericType) =>
+        Types.Where(type => type.IsGenericTypeCandidate(openGenericType))
+            .Select(type => type)
             .ToDictionary(KeySelector, type => type);
 
-        return related;
-    }
-
-    private static Type KeySelector(Type type)
-    {
-        Type result = typeof(Message<,>).MakeGenericType
-        (
-            type.BaseType?.GenericTypeArguments[0] ?? throw new InvalidOperationException(),
-            type.BaseType.GenericTypeArguments[1]
-        );
-
-        return result;
-    }
+    private static Type KeySelector(Type type) =>
+        MessageOpenGeneric.MakeGenericType(type.BaseType?.GenericTypeArguments[0]!, type.BaseType?.GenericTypeArguments[1]!);
 }

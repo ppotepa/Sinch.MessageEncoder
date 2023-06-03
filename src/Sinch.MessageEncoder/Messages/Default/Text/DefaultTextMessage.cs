@@ -10,5 +10,9 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
         public DefaultTextMessage(object headers, object payload) : base(headers, payload)
         {
         }
+
+        public DefaultTextMessage()
+        {
+        }
     }
 }

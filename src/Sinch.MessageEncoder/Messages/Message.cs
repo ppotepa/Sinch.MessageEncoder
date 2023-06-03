@@ -56,5 +56,9 @@ namespace Sinch.MessageEncoder.Messages
         protected Message(object headers, object payload) : base(headers, payload)
         {
         }
+
+        protected Message()
+        {
+        }
     }
 }

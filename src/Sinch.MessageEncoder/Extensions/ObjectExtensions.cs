@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -9,49 +10,31 @@ namespace Sinch.MessageEncoder.Extensions
         private static byte[] __toByteArrayByte(this byte @object)
         {
             if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
-
-            byte[] bytes = new[]
-            {
-                (byte)@object,
-            };
-
-            return bytes;
+            return new[] { @object };
         }
 
         private static byte[] __toByteArrayShort(this short @object)
         {
-            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
-
-            byte[] bytes = new[]
-            {
+            return new[] {
                 (byte)@object,
                 (byte)(@object >> 8)
             };
-
-            return bytes;
         }
 
         private static byte[] __toByteArrayInt(this int @object)
         {
-            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
-
-            byte[] bytes = new[]
+            return new[]
             {
                 (byte)@object,
                 (byte)(@object >> 8),
                 (byte)(@object >> 16),
                 (byte)(@object >> 24)
             };
-
-            return bytes;
         }
 
         private static byte[] __toBytearrayLong(this long @object)
         {
-            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
-
-            byte[] bytes = new[]
-            {
+            return new[] {
                 (byte)@object,
                 (byte)(@object >> 8),
                 (byte)(@object >> 16),
@@ -61,23 +44,17 @@ namespace Sinch.MessageEncoder.Extensions
                 (byte)(@object >> 48),
                 (byte)(@object >> 54)
             };
-
-            return bytes;
         }
 
         private static byte[] __toByteArrayString(this string @object)
         {
-            if (@object == null) throw new ArgumentNullException(nameof(@object));
-
-            byte[] bytes = new byte[@object.Length];
-            for (int index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) { };
+            var bytes = new byte[@object.Length];
+            for (var index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]);
             return bytes;
         }
 
         public static byte[] ToByteArray(this object @object)
         {
-            if (@object == null) throw new ArgumentNullException(nameof(@object));
-
             return @object switch
             {
                 long @long => __toBytearrayLong(@long),
@@ -87,28 +64,28 @@ namespace Sinch.MessageEncoder.Extensions
                 string @string => __toByteArrayString(@string),
                 byte[] @bytes => @bytes,
                 null => Array.Empty<byte>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, "null")
+                _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, null)
             };
+        }
+
+        public static short ToInt16(this byte[] @object)
+        {
+            return (short)(@object[0] | (@object[1] << 8));
+        }
+
+        public static int ToInt32(this byte[] @object)
+        {
+            return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
         }
 
         public static byte[] ToShortByteArray(this int @object)
         {
-            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
-
-            if (@object == default)
-                return Array.Empty<byte>();
-
-            object target = (short)@object;
-            return target switch
-            {
-                short @short => __toByteArrayShort(@short),
-            };
+            return __toByteArrayShort((short)@object);
         }
 
         public static IEnumerable<byte> GetBytes(this object data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
-
             return data switch
             {
                 // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 

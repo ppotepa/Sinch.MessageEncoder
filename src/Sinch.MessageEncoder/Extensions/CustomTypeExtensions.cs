@@ -11,6 +11,17 @@ namespace Sinch.MessageEncoder.Extensions
             if (type == null) throw new ArgumentNullException(nameof(type));
             return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer;
         }
+
+        public static bool IsGenericTypeCandidate(this Type type, Type openGenericType)
+        {
+            return type.IsAbstract is false && type.IsInterface is false &&
+                   type.BaseType is { IsGenericType: true } &&
+                   type.BaseType.GetGenericTypeDefinition() == openGenericType;
+        }
+
+        public static byte GetMessageTypeCode(this Type type) =>
+            type.GetCustomAttribute<MessageTypeAttribute>()!.MessageTypeCode;
+
     }
 
 }
