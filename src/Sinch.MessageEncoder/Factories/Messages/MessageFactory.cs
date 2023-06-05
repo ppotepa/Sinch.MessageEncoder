@@ -14,9 +14,6 @@ namespace Sinch.MessageEncoder.Factories.Messages
         private static readonly Dictionary<byte, Type> MessageTypes = default;
         private static readonly Dictionary<Type, Type> MessageTypesBinding = default;
 
-        private static Dictionary<byte, Type> Factory(IEnumerable<Type> types)
-            => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
-
         static MessageFactory()
         {
 
@@ -45,20 +42,6 @@ namespace Sinch.MessageEncoder.Factories.Messages
             as Message;
         }
 
-        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(byte[] messageBinary,
-            out Type targetBase, out MessageTransport messageTransport)
-        {
-            messageTransport = MessageTransport.FromSpan(messageBinary);
-            targetBase = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE].BaseType;
-
-            if (targetBase is { BaseType: null }) throw new InvalidOperationException("Message Type not supported");
-
-            return (
-                headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreateSerializer(targetBase.GenericTypeArguments[1])
-            );
-        }
-
         public static byte[] Serialize(Message message)
         {
             (IHeadersSerializer headers, IPayloadSerializer payload) serializers = GetSerializers(message);
@@ -71,9 +54,26 @@ namespace Sinch.MessageEncoder.Factories.Messages
             return bytes.ToArray();
         }
 
+        private static Dictionary<byte, Type> Factory(IEnumerable<Type> types)
+                                    => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
+        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(byte[] messageBinary,
+            out Type targetBase, out MessageTransport messageTransport)
+        {
+            messageTransport = MessageTransport.FromSpan(messageBinary);
+            targetBase = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE].BaseType;
+
+            if (targetBase is { BaseType: null }) throw new InvalidOperationException("Message Type not supported");
+
+            return (
+                headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
+                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
+            );
+        }
         private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(Message message)
         {
-            if (message.Headers is not MessageHeader headers) throw new InvalidOperationException();
+            if (message.Headers is not MessageHeader headers)
+                throw new InvalidOperationException();
+
             if (MessageTypes[headers.MessageType].BaseType is not { GenericTypeArguments.Length: 2 })
                 throw new InvalidOperationException("Message type not supported.");
 
@@ -81,7 +81,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
 
             return (
                 headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreateSerializer(targetBase.GenericTypeArguments[1])
+                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
             );
         }
     }

@@ -1,8 +1,8 @@
 ﻿using Sinch.MessageEncoder.Extensions;
-using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using System.Collections.Generic;
 using System.Linq;
+using Sinch.MessageEncoder.Factories.Serialization;
 
 namespace Sinch.MessageEncoder.PoC
 {
