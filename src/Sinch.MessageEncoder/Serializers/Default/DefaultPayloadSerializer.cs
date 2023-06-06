@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Sinch.MessageEncoder.Extensions;
+using Sinch.MessageEncoder.Messages;
+using Sinch.MessageEncoder.Metadata.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Sinch.MessageEncoder.Extensions;
-using Sinch.MessageEncoder.Messages;
-using Sinch.MessageEncoder.Metadata.Serialization;
 
 namespace Sinch.MessageEncoder.Serializers.Default
 {
@@ -19,10 +19,6 @@ namespace Sinch.MessageEncoder.Serializers.Default
 
         public Payload Deserialize(Type payloadType, ReadOnlySpan<byte> payloadSpan)
         {
-            var test = AppDomain.CurrentDomain
-                .GetSubclassesOf<Payload>()
-                .ToDictionary(type => type, SerializationMetadata.Create);
-
             Payload payload = Activator.CreateInstance(payloadType) as Payload;
             DeserializeProperties(payloadSpan, payload);
             return payload;
@@ -58,10 +54,6 @@ namespace Sinch.MessageEncoder.Serializers.Default
             foreach (SerializationMetadata data in metadata)
             {
                 var currentPropertyLength = payloadBytes.Slice(start, PropertyHeaderLength).ToInt32();
-                Console.WriteLine(payloadBytes.Length);
-                Console.WriteLine(new { data.Attribute.PropertyName });
-                Console.WriteLine(currentPropertyLength);
-
                 var currentPropertyBytes = payloadBytes.Slice(start + PropertyHeaderLength, currentPropertyLength);
 
                 if (data.PropertyInfo.PropertyType == typeof(string))

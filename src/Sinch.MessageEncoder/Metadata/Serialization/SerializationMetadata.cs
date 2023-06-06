@@ -7,13 +7,13 @@ namespace Sinch.MessageEncoder.Metadata.Serialization
 {
     internal class SerializationMetadata
     {
-        public SerializationMetadata(MessagePropertyAttribute attribute, PropertyInfo propertyInfo)
+        public SerializationMetadata(SerializationOrderAttribute attribute, PropertyInfo propertyInfo)
         {
             this.Attribute = attribute;
             this.PropertyInfo = propertyInfo;
         }
 
-        public MessagePropertyAttribute Attribute { get; set; }
+        public SerializationOrderAttribute Attribute { get; set; }
         public PropertyInfo PropertyInfo { get; set; }
 
         internal static SerializationMetadata[] Create(Type type)
@@ -22,11 +22,12 @@ namespace Sinch.MessageEncoder.Metadata.Serialization
             PropertyInfo[] properties = type.GetProperties();
 
             return properties
-                .Where(prop => prop.GetCustomAttribute<MessagePropertyAttribute>() is not null)
+                .Where(prop => prop.GetCustomAttribute<SerializationOrderAttribute>() is not null)
                 .Select(prop =>
                 {
                     var result = new SerializationMetadata(
-                        prop.GetCustomAttribute(typeof(MessagePropertyAttribute)) as MessagePropertyAttribute, prop);
+                        prop.GetCustomAttribute(typeof(SerializationOrderAttribute)) as SerializationOrderAttribute, prop);
+
                     return result;
                 })
                 .OrderBy(data => data.Attribute.Order)

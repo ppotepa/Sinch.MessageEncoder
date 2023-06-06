@@ -1,10 +1,9 @@
 using NUnit.Framework;
 using Sinch.MessageEncoder.Extensions;
-using Sinch.MessageEncoder.PoC;
+using Sinch.MessageEncoder.PoC.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ObjectExtensions = Sinch.MessageEncoder.Extensions.ObjectExtensions;
 
 // ReSharper disable InconsistentNaming
 namespace Sinch.MessageEncoder.Tests

@@ -5,6 +5,7 @@ using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sinch.MessageEncoder.Messages.Transport;
 
 namespace Sinch.MessageEncoder.Factories.Messages
 {

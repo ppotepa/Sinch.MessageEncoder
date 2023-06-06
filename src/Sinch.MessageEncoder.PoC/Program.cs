@@ -6,6 +6,7 @@ using Sinch.MessageEncoder.PoC.Diagnostics;
 using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Linq;
+using Sinch.MessageEncoder.PoC.Builders;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -85,12 +86,8 @@ namespace Sinch.MessageEncoder.PoC
                 msgType: 1,
                 headersLength: new long[] { 2 + 1, 2 + 1, 2 + 1, 3 * 16 }.Sum()
             )
-            //.AddHeader("test-header", (byte)254)
-            //.AddHeader("test-header-2", (byte)100)
-            //.AddHeader("test-header-3", (byte)50)
-            //.AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
-            //.AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
-            ////.AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
+            .AddHeader("recipient-name", "Pawel")
+            .AddHeader("sender-name", "Anne")
             .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John1" })
             .Serialize();
         }

@@ -7,5 +7,11 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     public class DefaultTextMessageHeaders : MessageHeader
     {
         public DefaultTextMessageHeaders() { }
+
+        [SerializationOrder(Order = 1, HeaderName = "recipient-name")]
+        public string SenderName { get; set; }
+
+        [SerializationOrder(Order = 2, HeaderName = "sender-name")]
+        public string RecipientName { get; set; }
     }
 }

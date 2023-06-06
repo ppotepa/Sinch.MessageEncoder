@@ -1,8 +1,9 @@
-﻿using Sinch.MessageEncoder.Extensions;
-using System;
+﻿using System;
+using Sinch.MessageEncoder.Extensions;
+
 // ReSharper disable InconsistentNaming
 
-namespace Sinch.MessageEncoder.Messages
+namespace Sinch.MessageEncoder.Messages.Transport
 {
     public ref struct MessageTransport
     {

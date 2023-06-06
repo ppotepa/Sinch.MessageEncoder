@@ -1,32 +1,84 @@
-﻿using System;
-using System.Net.Http;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
+using Sinch.MessageEncoder.Messages.Transport;
+using Sinch.MessageEncoder.Metadata.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Sinch.MessageEncoder.Serializers.Default
 {
     public class DefaultHeadersSerializer : IHeadersSerializer
     {
+        private const int PropertyHeaderLength = 2;
+        private static readonly Dictionary<Type, SerializationMetadata[]> HeadersMetadata = default;
+        static DefaultHeadersSerializer()
+        {
+            HeadersMetadata = AppDomain.CurrentDomain
+                .GetSubclassesOf<MessageHeader>()
+                .ToDictionary(type => type, SerializationMetadata.Create);
+        }
+
         public MessageHeader Deserialize(Type headersType, MessageHeaderTransport headersTransport)
         {
+            int start = 0;
+
             if (Activator.CreateInstance(headersType)! is MessageHeader headers)
             {
-                headers.From = headersTransport.MSG_FROM;
-                headers.To = headersTransport.MSG_TO;
-                headers.MessageType = headersTransport.MSG_TYPE;
-                headers.Timestamp = headersTransport.MSG_TIMESTAMP;
-                headers.MessageType = headersTransport.MSG_TYPE;
-                headers.HeadersLength = headersTransport.HEADERS_LENGTH;
-                
-                //if (headers.HeadersLength != 0)
+                headers.Apply(headersTransport);
+                var headerBytes = headersTransport.ADDITIONAL_HEADERS_BYTES;
+
+                SerializationMetadata[] metadata = HeadersMetadata[headersType];
+
+                foreach (var data in metadata)
                 {
-                    
-                    var byteArray = new ReadOnlySpan<byte>(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 });
-                    headers.Map<MessageHeader, string>("123", x => x.MyTestObject);
+                    var currentPropertyLength = headerBytes.Slice(start, PropertyHeaderLength).ToInt16();
+                    var currentHeaderBytes = headerBytes.Slice(start + PropertyHeaderLength, currentPropertyLength);
+
+                    object @value = null;
+
+                    if (data.PropertyInfo.PropertyType == typeof(string))
+                    {
+                        value = Encoding.ASCII.GetString(currentHeaderBytes);
+                        data.PropertyInfo.SetValue(headers, Encoding.ASCII.GetString(currentHeaderBytes));
+                    }
+
+                    if (data.PropertyInfo.PropertyType == typeof(long))
+                    {
+                        value = currentHeaderBytes.ToInt64();
+                        data.PropertyInfo.SetValue(headers, currentHeaderBytes.ToInt64());
+                    }
+
+                    if (data.PropertyInfo.PropertyType == typeof(int))
+                    {
+                        value = currentHeaderBytes.ToInt32();
+                        data.PropertyInfo.SetValue(headers, currentHeaderBytes.ToInt32());
+                    }
+
+                    if (data.PropertyInfo.PropertyType == typeof(short))
+                    {
+                        value = currentHeaderBytes.ToInt16();
+                        data.PropertyInfo.SetValue(headers, currentHeaderBytes.ToInt16());
+                    }
+
+                    if (data.PropertyInfo.PropertyType == typeof(byte))
+                    {
+                        value = currentHeaderBytes.ToInt8();
+                        data.PropertyInfo.SetValue(headers, currentHeaderBytes.ToInt8());
+                    }
+
+                    if (value is not null)
+                    {
+                        headers[data.Attribute.HeaderName] = value;
+                    }
+
+                    start += PropertyHeaderLength + currentPropertyLength;
                 }
             }
             else
                 throw new InvalidOperationException($"{headersType.Name} is not valid Header Type.");
+
             return headers;
         }
 

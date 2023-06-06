@@ -1,12 +1,12 @@
-﻿using Sinch.MessageEncoder.Extensions;
-using Sinch.MessageEncoder.Factories.Serialization;
-using Sinch.MessageEncoder.Messages;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sinch.MessageEncoder.Extensions;
+using Sinch.MessageEncoder.Factories.Serialization;
+using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Serializers;
 
-namespace Sinch.MessageEncoder.PoC
+namespace Sinch.MessageEncoder.PoC.Builders
 {
     //Helper Class that was used to create a Binary-Format array that represents Binary-Message-Transport
     internal class BinaryMessageBuilder

@@ -1,6 +1,7 @@
-﻿using System;
-using Sinch.MessageEncoder.Messages;
+﻿using Sinch.MessageEncoder.Messages;
+using Sinch.MessageEncoder.Messages.Transport;
 using Sinch.MessageEncoder.Serializers.Default;
+using System;
 
 namespace Sinch.MessageEncoder.Serializers
 {
