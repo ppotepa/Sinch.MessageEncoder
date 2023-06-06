@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sinch.MessageEncoder.Serialization.Default;
+namespace Sinch.MessageEncoder.Serializers.Default;
 
 public interface IDeserializer<out TPayload>
 {

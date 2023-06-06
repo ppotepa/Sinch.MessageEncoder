@@ -7,12 +7,9 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     {
         public override int HeadersCount => 1;
 
-        public DefaultTextMessage(object headers, object payload) : base(headers, payload)
-        {
-        }
+        public DefaultTextMessage(DefaultTextMessageHeaders headersFromTransports, DefaultTextMessagePayload payload) 
+            : base(headersFromTransports, payload) { }
 
-        public DefaultTextMessage()
-        {
-        }
+        public DefaultTextMessage() { }
     }
 }

@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Sinch.MessageEncoder.Factories.Messages;
+using System;
 
 namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
-        protected Message(object headers, object payload)
+        protected Message(object headersFromTransports, object payload)
         {
-            this._headers = headers ?? throw new ArgumentNullException(nameof(headers));
+            this._headers = headersFromTransports ?? throw new ArgumentNullException(nameof(headersFromTransports));
             this._payload = payload ?? throw new ArgumentNullException(nameof(payload));
         }
 
@@ -27,6 +28,21 @@ namespace Sinch.MessageEncoder.Messages
         {
             get => _payload;
             set => _payload = value;
+        }
+
+        public static Message FromBytes(byte[] messageBinary)
+        {
+            return MessageFactory.Create(messageBinary);
+        }
+
+        public static Message FromBytes(ReadOnlySpan<byte> messageBinary)
+        {
+            return MessageFactory.Create(messageBinary);
+        }
+
+        public static ReadOnlySpan<byte> ToBinary(Message message)
+        {
+            return MessageFactory.Serialize(message);
         }
     }
 
@@ -53,12 +69,7 @@ namespace Sinch.MessageEncoder.Messages
             }
         }
 
-        protected Message(object headers, object payload) : base(headers, payload)
-        {
-        }
-
-        protected Message()
-        {
-        }
+        protected Message(THeadersType headersFromTransports, TPayloadType payload) : base(headersFromTransports, payload) { }
+        protected Message() { }
     }
 }

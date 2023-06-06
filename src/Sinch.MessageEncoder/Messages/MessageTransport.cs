@@ -1,50 +1,28 @@
 ﻿using Sinch.MessageEncoder.Extensions;
 using System;
+// ReSharper disable InconsistentNaming
 
-namespace Sinch.MessageEncoder.Messages;
-
-public ref struct MessageTransport
+namespace Sinch.MessageEncoder.Messages
 {
-    public const int DEFAULT_UNCOMPRESSED_PAYLOADSIZE_TRANSPORT = 1024 * 1024 * 16;
-    public Span<byte> BinaryPayload = default;
-    public MessageHeaderTransport HeaderTransportInfo = new();
-
-    public MessageTransport()
+    public ref struct MessageTransport
     {
-    }
+        public const int DEFAULT_UNCOMPRESSED_PAYLOAD_SIZE_TRANSPORT = 1024 * 1024 * 16;
+        public ReadOnlySpan<byte> BinaryPayload = default;
+        public MessageHeaderTransport HeaderTransportInfo = new();
 
-    public static MessageTransport FromSpan(Span<byte> messageSpan)
-    {
-        long headersLength = messageSpan.GetMessageHeadersLength();
+        public MessageTransport() { }
 
-        MessageTransport result = new()
+        public static MessageTransport FromSpan(ReadOnlySpan<byte> messageSpan)
         {
-            HeaderTransportInfo = MessageHeaderTransport.FromSpan(messageSpan, headersLength),
-            BinaryPayload = messageSpan[(int)(25 + 8 + headersLength)..messageSpan.Length]
-        };
+            long headersLength = messageSpan.GetMessageHeadersLength();
 
-        int payLoadStartByteIndex = MessageHeadersProcessor(messageSpan, headersLength);
-        return result;
-    }
-
-    private static int MessageHeadersProcessor(Span<byte> messageSpan, long headersLength)
-    {
-        Span<byte> allHeaders = messageSpan.GetAllHeaders(headersLength);
-        Span<byte> currentHeader = default;
-        int index = default;
-
-        for (index = 0; index < allHeaders.Length;)
-        {
-            short currentHeaderLength = BitConverter.ToInt16(allHeaders[index..(index + 2)]);
-            currentHeader = allHeaders.Slice(index + 2, currentHeaderLength);
-
-            if (currentHeaderLength > 0)
+            MessageTransport result = new()
             {
-                index += 2 + currentHeaderLength;
-            }
-            else break;
-        }
+                HeaderTransportInfo = MessageHeaderTransport.FromSpan(messageSpan, headersLength),
+                BinaryPayload = messageSpan[(int)(25 + 8 + headersLength)..messageSpan.Length]
+            };
 
-        return index + currentHeader.Length;
+            return result;
+        }
     }
 }

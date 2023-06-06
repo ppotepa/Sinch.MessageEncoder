@@ -1,6 +1,6 @@
 ﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
-using Sinch.MessageEncoder.Serialization;
+using Sinch.MessageEncoder.Serializers.Default;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,29 +18,34 @@ namespace Sinch.MessageEncoder.Factories.Serialization
                 .GetSubclassesOf<MessageHeader>()
                 .ToDictionary(payload => payload, CustomTypeExtensions.ObtainSerializer);
 
-            PayloadSerializers ??= AppDomain.CurrentDomain.GetSubclassesOf<Payload>()
+            PayloadSerializers ??= AppDomain.CurrentDomain
+                .GetSubclassesOf<Payload>()
                 .ToDictionary(payload => payload, CustomTypeExtensions.ObtainSerializer);
 
         }
 
-        public static IPayloadSerializer CreatePayloadSerializer(Type payloadType)
+        private static ISerializer CreateSerializer(Type type)
         {
-            if (payloadType is null) 
-                throw new ArgumentNullException(nameof(payloadType));
+            if (type is null) 
+                throw new ArgumentNullException(nameof(type));
 
-            return typeof(Payload).IsAssignableFrom(payloadType)
-                ? Activator.CreateInstance(PayloadSerializers[payloadType]) as IPayloadSerializer
-                : throw new ArgumentException($"{payloadType.Name} is not assignable from {nameof(Payload)}.");
+            if (typeof(Payload).IsAssignableFrom(type))
+                return Activator.CreateInstance(PayloadSerializers[type]) as ISerializer;
+            
+
+            if (typeof(MessageHeader).IsAssignableFrom(type))
+                return Activator.CreateInstance(HeadersSerializers[type]) as ISerializer;
+            
+
+            throw new ArgumentException(
+                $"{type.Name} is not assignable from {nameof(Payload)} nor from {nameof(MessageHeader)}."
+            );
         }
 
-        public static IHeadersSerializer CreateHeadersSerializer(Type headersType)
+        public static TSerializer CreateSerializer<TSerializer>(Type type)
+            where TSerializer : ISerializer
         {
-            if (headersType is null)
-                throw new ArgumentNullException(nameof(headersType));
-
-            return typeof(MessageHeader).IsAssignableFrom(headersType)
-                ? Activator.CreateInstance(HeadersSerializers[headersType]) as IHeadersSerializer
-                : throw new ArgumentException($"{headersType.Name} is not assignable from {nameof(MessageHeader)}.");
+            return (TSerializer)CreateSerializer(type);
         }
     }
 }

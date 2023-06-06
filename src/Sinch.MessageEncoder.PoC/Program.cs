@@ -3,6 +3,7 @@ using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
 using Sinch.MessageEncoder.PoC.Diagnostics;
+using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Linq;
 
@@ -27,54 +28,54 @@ namespace Sinch.MessageEncoder.PoC
         //    return span;
         //}
 
-        private static string LONG_STRING => string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 16)).Select(x => "A"));
-
-        static void Main(string[] args)
-        {
-            //Span<byte> fromCompressedFileSpan = ExtractFromFile("testbinaries\\deflate.zlib");
-            var delegateStopWatch = new DelegateStopwatch(Measure_2, Console.WriteLine);
-            var executions = 500;
-            var average = delegateStopWatch.Execute(executions);
-            Console.WriteLine($"Average {average} ms. for {executions}");
-        }
-
         private static readonly Action Measure_1 = () =>
         {
-            byte[] binaryObject = GetBinaryObject();
+            ReadOnlySpan<byte> binaryObject = GetBinaryObject();
+
             Message message = MessageFactory.Create(binaryObject);
-            byte[] serialized = MessageFactory.Serialize(message);
-            bool equal = serialized.SequenceEqual(binaryObject);
+            ReadOnlySpan<byte> serialized = MessageFactory.Serialize(message);
+
+            //var fromBinary = Message.FromBytes(serialized);
+            bool equal = serialized.ToArray().SequenceEqual(binaryObject.ToArray());
+
+            for (var i = 0; i < serialized.Length; i++)
+            {
+                if (serialized[i] != binaryObject[i])
+                {
+                    Console.WriteLine(new { index = i });
+                    Console.WriteLine($"s:{serialized[i]}, b:{binaryObject[i]}");
+                }
+            }
         };
 
         private static readonly Action Measure_2 = () =>
         {
             var message = new DefaultTextMessage
             {
-                Headers = new DefaultTextMessageHeaders
+                Headers = new()
                 {
                     From = 1,
                     To = 2,
                     Timestamp = 12312312,
-                    MessageType = 1,
-                    AdditionalHeaders = null
+                    MessageType = 1
                 },
-                Payload = new DefaultTextMessagePayload
+
+                Payload = new()
                 {
-                    TextMessageBodyExtended = LONG_STRING,
-                    Replies = 32,
                     TextMessageBody = "John"
                 }
             };
 
-            var payloadSerializer = SerializersFactory.CreatePayloadSerializer(typeof(DefaultTextMessagePayload));
-            var headersSerializer = SerializersFactory.CreateHeadersSerializer(typeof(DefaultTextMessageHeaders));
+            var payloadSerializer = SerializersFactory.CreateSerializer<IPayloadSerializer>(typeof(DefaultTextMessagePayload));
+            var headersSerializer = SerializersFactory.CreateSerializer<IHeadersSerializer>(typeof(DefaultTextMessageHeaders));
 
             var result1 = payloadSerializer.Serialize(message.Payload);
             var result2 = headersSerializer.Serialize(message.Headers);
         };
 
+        private static string LONG_STRING => string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 16)).Select(x => "A"));
 
-        private static byte[] GetBinaryObject()
+        private static ReadOnlySpan<byte> GetBinaryObject()
         {
             return new BinaryMessageBuilder
             (
@@ -84,14 +85,23 @@ namespace Sinch.MessageEncoder.PoC
                 msgType: 1,
                 headersLength: new long[] { 2 + 1, 2 + 1, 2 + 1, 3 * 16 }.Sum()
             )
-            .AddHeader("test-header", (byte)254)
-            .AddHeader("test-header-2", (byte)100)
-            .AddHeader("test-header-3", (byte)50)
-            .AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
-            .AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
-            .AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
-            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John", TextMessageBodyExtended = LONG_STRING, Replies = 32 })
+            //.AddHeader("test-header", (byte)254)
+            //.AddHeader("test-header-2", (byte)100)
+            //.AddHeader("test-header-3", (byte)50)
+            //.AddHeader("test-header-5", "AAAAAAAAAAAAAAAA")
+            //.AddHeader("test-header-6", "BBBBBBBBBBBBBBBB")
+            ////.AddHeader("test-header-7", "OKTQYKCIHBOLROJI")
+            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John1" })
             .Serialize();
+        }
+
+        static void Main(string[] args)
+        {
+            //Span<byte> fromCompressedFileSpan = ExtractFromFile("testbinaries\\deflate.zlib");
+            var delegateStopWatch = new DelegateStopwatch(Measure_1, Console.WriteLine);
+            var executions = 500;
+            var average = delegateStopWatch.Execute(executions);
+            Console.WriteLine($"Average {average} ms. for {executions}");
         }
     }
 }

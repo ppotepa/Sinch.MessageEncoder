@@ -60,8 +60,8 @@ namespace Sinch.MessageEncoder.Tests
         [Test]
         public void Binary_Serializer_Serializes_Basic_Headers_Correctly()
         {
-            byte[] binaryMessageBuilder = new BinaryMessageBuilder(1, 2, 1685193094, 1, 0).Serialize();
-            Assert.That(assertHeaderBytes.SequenceEqual(binaryMessageBuilder), Is.True);
+            var binary = new BinaryMessageBuilder(1, 2, 1685193094, 1, 0).Serialize().ToArray();
+            Assert.That(assertHeaderBytes.SequenceEqual(binary), Is.True);
         }
 
         [Test]
@@ -70,16 +70,18 @@ namespace Sinch.MessageEncoder.Tests
             IEnumerable<byte> defaultSerializerResult = defaultSerializerInput.SelectMany(integer => integer.ToByteArray());
             IEnumerable<byte> binarySerializerResult = defaultSerializerInput.SelectMany(ObjectExtensions.GetBytes);
 
-            byte[] binaryMessageBuilder = new BinaryMessageBuilder((long)1, (long)2, (long)1685193094, (byte)1, ((1 + 2 + 4 + 8 + 32) + (2 * 5)))
+            var messageBinary = new BinaryMessageBuilder((long)1, (long)2, (long)1685193094, (byte)1,
+                    ((1 + 2 + 4 + 8 + 32) + (2 * 5)))
                 .AddHeader("byte", (byte)100)
                 .AddHeader("short", (short)100)
                 .AddHeader("int", (int)100)
                 .AddHeader("long", (long)100)
                 .AddHeader("string", STRING_32_BYTES)
-                .Serialize();
+                .Serialize()
+                .ToArray();
 
             bool[] testAssertionConditions = {
-                assertBytes.SequenceEqual(binaryMessageBuilder),        // Check against BinaryBuilder.
+                assertBytes.SequenceEqual(messageBinary),               // Check against BinaryBuilder.
                 assertBytes.SequenceEqual(defaultSerializerResult),     // Check against ToByteArray() Extension Method.
                 assertBytes.SequenceEqual(binarySerializerResult)       // Check against Built-In BitConverter.
             };

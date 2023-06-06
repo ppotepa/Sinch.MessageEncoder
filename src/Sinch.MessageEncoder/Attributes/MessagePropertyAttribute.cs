@@ -5,9 +5,8 @@ namespace Sinch.MessageEncoder.Attributes
     [AttributeUsage(AttributeTargets.Property, Inherited = true)]
     public class MessagePropertyAttribute : Attribute
     {
-        public MessagePropertyAttribute(Type targetType, int order, string propertyName)
+        public MessagePropertyAttribute(int order, string propertyName)
         {
-            TargetType = targetType;
             Order = order;
             PropertyName = propertyName;
         }
@@ -16,7 +15,6 @@ namespace Sinch.MessageEncoder.Attributes
         {
         }
 
-        public Type TargetType { get; set; }
         public int Order { get; set; }
         public string PropertyName { get; set; }
     }

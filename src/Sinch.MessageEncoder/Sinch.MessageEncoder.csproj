@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Folder Include="Messages\Payload\" />
-    <Folder Include="Serialization\Default\Properties\" />
+    <Folder Include="Serializers\Default\Properties\" />
   </ItemGroup>
 
 </Project>

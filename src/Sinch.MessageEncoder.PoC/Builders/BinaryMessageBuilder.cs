@@ -1,8 +1,10 @@
 ﻿using Sinch.MessageEncoder.Extensions;
+using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sinch.MessageEncoder.Factories.Serialization;
+using Sinch.MessageEncoder.Serializers;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -40,10 +42,10 @@ namespace Sinch.MessageEncoder.PoC
             return this;
         }
 
-        public byte[] Serialize()
+        public ReadOnlySpan<byte> Serialize()
         {
             Payload ??= Payload.Empty;
-
+            
             ArrangeBytes
             (
                 out var fromByteArray,
@@ -63,16 +65,19 @@ namespace Sinch.MessageEncoder.PoC
                 msgTypeByteArray,
                 headersByteArrayLength,
                 headersByteArray,
-                payloadByteArray
+                payloadByteArray.ToArray()
             }
-            .SelectMany(@object => @object).ToArray();
+            .SelectMany(@object => @object)
+            .ToArray();
         }
 
         private void ArrangeBytes
         (
             out byte[] fromByteArray, out byte[] toByteArray, out byte[] timestampByteArray, out byte[] msgTypeByteArray,
-            out byte[] headersByteArray, out byte[] headersByteArrayLength, out byte[] payloadByteArray)
+            out byte[] headersByteArray, out byte[] headersByteArrayLength, out ReadOnlySpan<byte> payloadByteArray)
         {
+            var payloadType = Payload?.GetType();
+
             fromByteArray = From.ToByteArray();
             toByteArray = To.ToByteArray();
             timestampByteArray = Timestamp.ToByteArray();
@@ -90,7 +95,8 @@ namespace Sinch.MessageEncoder.PoC
             // ReSharper disable once RedundantCast - in this case it is not Redunant,
             // because it makes our byteArray 8-byte long instead of 4-byte
             headersByteArrayLength = ((long)headersByteArray.Length).ToByteArray();
-            payloadByteArray = SerializersFactory.CreatePayloadSerializer(Payload?.GetType()).Serialize(Payload);
+            headersByteArrayLength = ((long)headersByteArray.Length).ToByteArray();
+            payloadByteArray = SerializersFactory.CreateSerializer<IPayloadSerializer>(payloadType).Serialize(Payload);
         }
     }
 }

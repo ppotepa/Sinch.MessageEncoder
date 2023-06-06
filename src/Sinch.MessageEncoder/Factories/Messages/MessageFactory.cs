@@ -1,8 +1,7 @@
 ﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
-using Sinch.MessageEncoder.Messages.Default.Text;
-using Sinch.MessageEncoder.Serialization;
+using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +15,11 @@ namespace Sinch.MessageEncoder.Factories.Messages
 
         static MessageFactory()
         {
-
             MessageTypes = AppDomain.CurrentDomain.GetSubclassesOf<Message, Dictionary<byte, Type>>(Factory);
             MessageTypesBinding = AppDomain.CurrentDomain.GetSubclassesOfOpenGeneric(typeof(Message<,>));
         }
 
-        public static Message Create(byte[] messageBinary)
+        public static Message Create(ReadOnlySpan<byte> messageBinary)
         {
             var serializers = GetSerializers
             (
@@ -30,59 +28,52 @@ namespace Sinch.MessageEncoder.Factories.Messages
                 messageTransport: out var messageTransport
             );
 
-            return Activator.CreateInstance
-            (
-                type: MessageTypesBinding[typeof(Message<,>).MakeGenericType(target.GenericTypeArguments[0], target.GenericTypeArguments[1])],
+            var targetType =
+                MessageTypesBinding[typeof(Message<,>).MakeGenericType(target.GenericTypeArguments[0], target.GenericTypeArguments[1])];
+
+            return Activator.CreateInstance(
+                type: targetType,
                 args: new object[]
                 {
                     serializers.headers.Deserialize(target.GenericTypeArguments[0], messageTransport.HeaderTransportInfo),
-                    serializers.payload.Deserialize(messageTransport.BinaryPayload, target.GenericTypeArguments[1])
+                    serializers.payload.Deserialize(target.GenericTypeArguments[1], messageTransport.BinaryPayload)
                 }
             )
             as Message;
         }
 
-        public static byte[] Serialize(Message message)
+        public static Message Create(byte[] messageBinary) 
+            => Create(new ReadOnlySpan<byte>(messageBinary));
+
+        public static byte[] Serialize<TMessage>(TMessage message)
+            where TMessage : Message
         {
-            (IHeadersSerializer headers, IPayloadSerializer payload) serializers = GetSerializers(message);
+            var serializers = Create(message.GetType().BaseType);
 
-            List<byte> bytes = new List<byte>();
-
-            bytes.AddRange(serializers.headers.Serialize(message.Headers as DefaultTextMessageHeaders));
-            bytes.AddRange(serializers.payload.Serialize(message.Payload as DefaultTextMessagePayload));
-
-            return bytes.ToArray();
+            var headers = serializers.headers.Serialize(message.Headers as MessageHeader).ToArray();
+            var payload = serializers.payload.Serialize(message.Payload as Payload).ToArray();
+           
+            return headers.Concat(payload).ToArray();
         }
 
+        private static (IHeadersSerializer headers, IPayloadSerializer payload) Create(Type targetBase) => (
+            headers: SerializersFactory.CreateSerializer<IHeadersSerializer>(targetBase!.GenericTypeArguments[0]),
+            payload: SerializersFactory.CreateSerializer<IPayloadSerializer>(targetBase!.GenericTypeArguments[1])
+        );
+
         private static Dictionary<byte, Type> Factory(IEnumerable<Type> types)
-                                    => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
-        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(byte[] messageBinary,
+                                            => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
+
+        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(ReadOnlySpan<byte> messageBinary,
             out Type targetBase, out MessageTransport messageTransport)
         {
             messageTransport = MessageTransport.FromSpan(messageBinary);
             targetBase = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE].BaseType;
 
-            if (targetBase is { BaseType: null }) throw new InvalidOperationException("Message Type not supported");
+            if (targetBase is { BaseType: null }) 
+                throw new InvalidOperationException("Message Type not supported");
 
-            return (
-                headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
-            );
-        }
-        private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(Message message)
-        {
-            if (message.Headers is not MessageHeader headers)
-                throw new InvalidOperationException();
-
-            if (MessageTypes[headers.MessageType].BaseType is not { GenericTypeArguments.Length: 2 })
-                throw new InvalidOperationException("Message type not supported.");
-
-            Type targetBase = MessageTypes[headers.MessageType].BaseType;
-
-            return (
-                headers: SerializersFactory.CreateHeadersSerializer(targetBase.GenericTypeArguments[0]),
-                payload: SerializersFactory.CreatePayloadSerializer(targetBase.GenericTypeArguments[1])
-            );
+            return Create(targetBase);
         }
     }
 }
