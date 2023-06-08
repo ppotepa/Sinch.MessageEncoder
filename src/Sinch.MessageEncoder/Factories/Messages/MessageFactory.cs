@@ -1,11 +1,11 @@
 ﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
+using Sinch.MessageEncoder.Messages.Transport;
 using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sinch.MessageEncoder.Messages.Transport;
 
 namespace Sinch.MessageEncoder.Factories.Messages
 {
@@ -29,18 +29,20 @@ namespace Sinch.MessageEncoder.Factories.Messages
                 messageTransport: out var messageTransport
             );
 
-            var targetType =
-                MessageTypesBinding[typeof(Message<,>).MakeGenericType(target.GenericTypeArguments[0], target.GenericTypeArguments[1])];
+            var targetType = MessageTypesBinding[typeof(Message<,>)
+                    .MakeGenericType(target.GenericTypeArguments[0], target.GenericTypeArguments[1])];
 
-            return Activator.CreateInstance(
+            var instance = Activator.CreateInstance
+            (
                 type: targetType,
                 args: new object[]
                 {
                     serializers.headers.Deserialize(target.GenericTypeArguments[0], messageTransport.HeaderTransportInfo),
                     serializers.payload.Deserialize(target.GenericTypeArguments[1], messageTransport.BinaryPayload)
                 }
-            )
-            as Message;
+            );
+
+            return instance as Message;
         }
 
         public static Message Create(byte[] messageBinary) 

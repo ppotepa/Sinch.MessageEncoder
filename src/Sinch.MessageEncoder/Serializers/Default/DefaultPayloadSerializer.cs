@@ -20,7 +20,12 @@ namespace Sinch.MessageEncoder.Serializers.Default
         public Payload Deserialize(Type payloadType, ReadOnlySpan<byte> payloadSpan)
         {
             Payload payload = Activator.CreateInstance(payloadType) as Payload;
-            DeserializeProperties(payloadSpan, payload);
+            
+            if (payloadSpan.Length > 0)
+            {
+                DeserializeProperties(payloadSpan, payload);
+            }
+
             return payload;
         }
 
@@ -57,19 +62,43 @@ namespace Sinch.MessageEncoder.Serializers.Default
                 var currentPropertyBytes = payloadBytes.Slice(start + PropertyHeaderLength, currentPropertyLength);
 
                 if (data.PropertyInfo.PropertyType == typeof(string))
-                    data.PropertyInfo.SetValue(payload, Encoding.ASCII.GetString(currentPropertyBytes));
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.GetString());
 
                 if (data.PropertyInfo.PropertyType == typeof(long))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt64());
 
+                if (data.PropertyInfo.PropertyType == typeof(long?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt64());
+
                 if (data.PropertyInfo.PropertyType == typeof(int))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt32());
+
+                if (data.PropertyInfo.PropertyType == typeof(int?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt32());
 
                 if (data.PropertyInfo.PropertyType == typeof(short))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt16());
 
+                if (data.PropertyInfo.PropertyType == typeof(short?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt16());
+
                 if (data.PropertyInfo.PropertyType == typeof(byte))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt8());
+
+                if (data.PropertyInfo.PropertyType == typeof(byte?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt8());
+
+                if (data.PropertyInfo.PropertyType == typeof(float))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToSingle());
+
+                if (data.PropertyInfo.PropertyType == typeof(float?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableSingle());
+
+                if (data.PropertyInfo.PropertyType == typeof(double))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToDouble());
+
+                if (data.PropertyInfo.PropertyType == typeof(double?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableDouble());
 
                 start += PropertyHeaderLength + currentPropertyLength;
             }

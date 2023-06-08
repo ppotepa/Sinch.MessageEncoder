@@ -5,6 +5,9 @@ namespace Sinch.MessageEncoder.Messages
 {
     public abstract class Message
     {
+        protected object _headers;
+        protected object _payload;
+
         protected Message(object headersFromTransports, object payload)
         {
             this._headers = headersFromTransports ?? throw new ArgumentNullException(nameof(headersFromTransports));
@@ -14,9 +17,6 @@ namespace Sinch.MessageEncoder.Messages
         protected Message()
         {
         }
-
-        protected object _headers;
-        protected object _payload;
 
         public virtual object Headers
         {
@@ -50,6 +50,10 @@ namespace Sinch.MessageEncoder.Messages
         where TPayloadType : Payload, new()
         where THeadersType : MessageHeader, new()
     {
+        protected Message(THeadersType headersFromTransports, TPayloadType payload) : base(headersFromTransports, payload) { }
+
+        protected Message() { }
+
         public override THeadersType Headers
         {
             get
@@ -59,7 +63,6 @@ namespace Sinch.MessageEncoder.Messages
             }
         }
 
-        public abstract int HeadersCount { get; }
         public override TPayloadType Payload
         {
             get
@@ -69,7 +72,9 @@ namespace Sinch.MessageEncoder.Messages
             }
         }
 
-        protected Message(THeadersType headersFromTransports, TPayloadType payload) : base(headersFromTransports, payload) { }
-        protected Message() { }
+        public void AddHeader(string key, object value)
+        {
+            this.Headers[key] = value;
+        }
     }
 }

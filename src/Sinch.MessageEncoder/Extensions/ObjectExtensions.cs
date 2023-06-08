@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -16,6 +18,8 @@ namespace Sinch.MessageEncoder.Extensions
                 short @short => BitConverter.GetBytes(@short),
                 int @int => BitConverter.GetBytes(@int),
                 long @long => BitConverter.GetBytes(@long),
+                float @float => BitConverter.GetBytes(@float),
+                double @double => BitConverter.GetBytes(@double),
                 string @string => System.Text.Encoding.ASCII.GetBytes(@string),
                 _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
             };
@@ -30,6 +34,9 @@ namespace Sinch.MessageEncoder.Extensions
                 short @short => __toByteArrayShort(@short),
                 byte @byte => __toByteArrayByte(@byte),
                 string @string => __toByteArrayString(@string),
+                float @float => __toByteArraySingle(@float),
+                double @double => __toByteArrayDouble(@double),
+                bool @boolean => new byte[]{ @boolean is true ? (byte) 1 : (byte) 0 },
                 byte[] @bytes => @bytes,
                 object[] @objects => @objects.SelectMany(@o => @o.ToByteArray()).ToArray(),
                 null => Array.Empty<byte>(),
@@ -52,6 +59,16 @@ namespace Sinch.MessageEncoder.Extensions
             return (short)(@object[0] | (@object[1] << 8));
         }
 
+        public static short? ToNullableInt16(this ReadOnlySpan<byte> @object)
+        {
+            if (@object.Length is not 0)
+            {
+                return (short)(@object[0] | (@object[1] << 8));
+            }
+
+            return default;
+        }
+
         public static int ToInt32(this byte[] @object)
         {
             return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
@@ -64,7 +81,22 @@ namespace Sinch.MessageEncoder.Extensions
 
         public static int ToInt32(this ReadOnlySpan<byte> @object)
         {
-            return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            if (@object.Length is not 0)
+            {
+                return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            }
+
+            return 0;
+        }
+
+        public static int? ToNullableInt32(this ReadOnlySpan<byte> @object)
+        {
+            if (@object.Length is not 0)
+            {
+                return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            }
+
+            return null;
         }
 
         public static long ToInt64(this Span<byte> @object)
@@ -75,6 +107,47 @@ namespace Sinch.MessageEncoder.Extensions
         public static long ToInt64(this ReadOnlySpan<byte> @object)
         {
             return BitConverter.ToInt64(@object);
+        }
+
+        public static long? ToNullableInt64(this ReadOnlySpan<byte> @object)
+        {
+            return BitConverter.ToInt64(@object);
+        }
+
+        public static string GetString(this ReadOnlySpan<byte> @object)
+        {
+            return @object.Length is not 0
+                ? Encoding.ASCII.GetString(@object) 
+                : null;
+        }
+
+        public static float ToSingle(this ReadOnlySpan<byte> @object)
+        {
+            return BitConverter.ToSingle(@object);
+        }
+
+        public static float? ToNullableSingle(this ReadOnlySpan<byte> @object)
+        {
+            return @object.Length is not 0 
+                ? BitConverter.ToSingle(@object) 
+                : default(float?);
+        }
+
+        public static bool ToBoolean(this ReadOnlySpan<byte> @object)
+        {
+            return BitConverter.ToBoolean(@object);
+        }
+
+        public static double ToDouble(this ReadOnlySpan<byte> @object)
+        {
+            return BitConverter.ToDouble(@object);
+        }
+
+        public static double? ToNullableDouble(this ReadOnlySpan<byte> @object)
+        {
+            return @object.Length is not 0 
+                ? BitConverter.ToDouble(@object) 
+                : default(double?);
         }
 
         public static long ToInt64(this byte[] @object)
@@ -97,6 +170,15 @@ namespace Sinch.MessageEncoder.Extensions
             return span[0];
         }
 
+        public static byte? ToNullableInt8(this ReadOnlySpan<byte> span)
+        {
+            if (span.Length is not 0)
+            {
+                return span[0];
+            }
+            return default;
+        }
+
         private static byte[] __toByteArrayByte(this byte @object)
         {
             if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
@@ -112,6 +194,16 @@ namespace Sinch.MessageEncoder.Extensions
                 (byte)(@object >> 16),
                 (byte)(@object >> 24)
             };
+        }
+
+        private static byte[] __toByteArraySingle(this float @object)
+        {
+            return BitConverter.GetBytes(@object);
+        }
+
+        private static byte[] __toByteArrayDouble(this double @object)
+        {
+            return BitConverter.GetBytes(@object);
         }
 
         private static byte[] __toBytearrayLong(this long @object)
@@ -135,9 +227,7 @@ namespace Sinch.MessageEncoder.Extensions
                 (byte)(@object >> 8)
             };
         }
-        //private static Dictionary<char, byte> _chars 
-        //    = Enumerable.Range(0, 255).ToDictionary(c => (char)c, b => (byte)b);
-
+        
         private static byte[] __toByteArrayString(this string @object)
         {
             var bytes = new byte[@object.Length];

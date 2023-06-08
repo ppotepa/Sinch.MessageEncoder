@@ -1,8 +1,7 @@
-﻿using System;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System;
 
 // ReSharper disable InconsistentNaming
-
 namespace Sinch.MessageEncoder.Messages.Transport
 {
     public ref struct MessageHeaderTransport
@@ -39,7 +38,8 @@ namespace Sinch.MessageEncoder.Messages.Transport
 
         public static MessageHeaderTransport FromSpan(ReadOnlySpan<byte> messageSpan, long headersLength)
         {
-            return new MessageHeaderTransport(
+            return new MessageHeaderTransport
+            (
                 msgFrom: messageSpan.GetMessageFrom(),
                 msgTo: messageSpan.GetMessageTo(),
                 msgTimestamp: messageSpan.GetMessageTimestamp(),

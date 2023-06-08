@@ -6,12 +6,13 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
     [UseSerializer(typeof(DefaultHeadersSerializer))]
     public class DefaultTextMessageHeaders : MessageHeader
     {
-        public DefaultTextMessageHeaders() { }
-
         [SerializationOrder(Order = 1, HeaderName = "recipient-name")]
-        public string SenderName { get; set; }
+        public string SenderName { get; init; }
 
         [SerializationOrder(Order = 2, HeaderName = "sender-name")]
         public string RecipientName { get; set; }
+
+        [SerializationOrder(Order = 3, HeaderName = "is-message-unread")]
+        public bool IsMessageUnread { get; set; }
     }
 }

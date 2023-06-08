@@ -2,11 +2,12 @@
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
+using Sinch.MessageEncoder.PoC.Builders;
 using Sinch.MessageEncoder.PoC.Diagnostics;
 using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Linq;
-using Sinch.MessageEncoder.PoC.Builders;
+using Sinch.MessageEncoder.Extensions;
 
 namespace Sinch.MessageEncoder.PoC
 {
@@ -37,7 +38,7 @@ namespace Sinch.MessageEncoder.PoC
             ReadOnlySpan<byte> serialized = MessageFactory.Serialize(message);
 
             //var fromBinary = Message.FromBytes(serialized);
-            bool equal = serialized.ToArray().SequenceEqual(binaryObject.ToArray());
+            bool equal = serialized.SequenceEqual(binaryObject);
 
             for (var i = 0; i < serialized.Length; i++)
             {
@@ -78,25 +79,38 @@ namespace Sinch.MessageEncoder.PoC
 
         private static ReadOnlySpan<byte> GetBinaryObject()
         {
-            return new BinaryMessageBuilder
-            (
-                from: 1,
-                to: 2,
-                timestamp: 1685193094,
-                msgType: 1,
-                headersLength: new long[] { 2 + 1, 2 + 1, 2 + 1, 3 * 16 }.Sum()
-            )
-            .AddHeader("recipient-name", "Pawel")
-            .AddHeader("sender-name", "Anne")
-            .AddPayload(new DefaultTextMessagePayload { TextMessageBody = "John1" })
-            .Serialize();
+            return MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(DateTime.Now.Ticks)
+                .MsgType(1)
+                .AddHeader("recipient-name", "Joe")
+                .AddHeader("sender-name", "Anne")
+                .AddHeader("is-message-unread", true)
+                .EndHeaders()
+                .AddPayloadProperty(nameof(DefaultTextMessagePayload.TextMessageBody), "Test Message body")
+                .GetBinary();
         }
 
         static void Main(string[] args)
         {
+            var builder = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder();
+
+            var message = builder
+                .From(1)
+                .To(2)
+                .Timestamp(DateTime.Now.Ticks)
+                .MsgType(1)
+                .AddHeader("recipient-name", "Joe")
+                .AddHeader("sender-name", "Anne")
+                .AddHeader("is-message-unread", true)
+                .EndHeaders()
+                .AddPayloadProperty(nameof(DefaultTextMessagePayload.TextMessageBody), "Test Message body")
+                .Build();
+
             //Span<byte> fromCompressedFileSpan = ExtractFromFile("testbinaries\\deflate.zlib");
             var delegateStopWatch = new DelegateStopwatch(Measure_1, Console.WriteLine);
-            var executions = 500;
+            var executions = -1;
             var average = delegateStopWatch.Execute(executions);
             Console.WriteLine($"Average {average} ms. for {executions}");
         }
