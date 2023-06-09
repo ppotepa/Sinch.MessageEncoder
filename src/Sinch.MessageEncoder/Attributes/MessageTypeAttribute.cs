@@ -5,12 +5,10 @@ namespace Sinch.MessageEncoder.Attributes
     public class MessageTypeAttribute : Attribute
     {
         public byte MessageTypeCode { get; init; }
-        public string Name { get; init; }
 
-        public MessageTypeAttribute(byte messageTypeCode, string name)
+        public MessageTypeAttribute(byte messageTypeCode)
         {
             this.MessageTypeCode = messageTypeCode;
-            this.Name = name;
         }
 
         public MessageTypeAttribute()

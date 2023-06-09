@@ -2,11 +2,13 @@
 
 namespace Sinch.MessageEncoder.Messages.Default.Text
 {
-    [MessageType(MessageTypeCode = 1, Name = nameof(DefaultTextMessage))]
+    [MessageType(MessageTypeCode = 1)]
     public class DefaultTextMessage : Message<DefaultTextMessageHeaders, DefaultTextMessagePayload>
     {
-        public DefaultTextMessage(DefaultTextMessageHeaders headersFromTransports, DefaultTextMessagePayload payload) 
-            : base(headersFromTransports, payload) { }
+        public DefaultTextMessage(DefaultTextMessageHeaders headersFromTransports, DefaultTextMessagePayload payload)
+            : base(headersFromTransports, payload)
+        {
+        }
 
         public DefaultTextMessage() { }
     }

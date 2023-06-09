@@ -4,7 +4,6 @@ using Sinch.MessageEncoder.Metadata.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sinch.MessageEncoder.Serializers.Default
 {
@@ -41,7 +40,8 @@ namespace Sinch.MessageEncoder.Serializers.Default
 
             foreach (var data in metadata)
             {
-                var array = data.PropertyInfo.GetValue(payload).ToByteArray();
+                var value = data.PropertyInfo.GetValue(payload);
+                var array = value.ToByteArray();
                 listBytes.AddRange((array.Length).ToByteArray(), array);
             }
 
@@ -60,6 +60,12 @@ namespace Sinch.MessageEncoder.Serializers.Default
             {
                 var currentPropertyLength = payloadBytes.Slice(start, PropertyHeaderLength).ToInt32();
                 var currentPropertyBytes = payloadBytes.Slice(start + PropertyHeaderLength, currentPropertyLength);
+
+                if (data.PropertyInfo.PropertyType == typeof(bool))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToBoolean());
+
+                if (data.PropertyInfo.PropertyType == typeof(bool?))
+                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableBoolean());
 
                 if (data.PropertyInfo.PropertyType == typeof(string))
                     data.PropertyInfo.SetValue(payload, currentPropertyBytes.GetString());

@@ -32,6 +32,11 @@ internal static class AppDomainExtensions
             .Select(type => type)
             .ToDictionary(KeySelector, type => type);
 
-    private static Type KeySelector(Type type) =>
-        MessageOpenGeneric.MakeGenericType(type.BaseType?.GenericTypeArguments[0]!, type.BaseType?.GenericTypeArguments[1]!);
+    private static Type KeySelector(Type type)
+    {
+        var result = MessageOpenGeneric.MakeGenericType(type.BaseType!.GenericTypeArguments[0]!,
+            type.BaseType!.GenericTypeArguments[1]!);
+
+        return result;
+    }
 }

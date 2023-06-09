@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Sinch.MessageEncoder.Exceptions;
 
 namespace Sinch.MessageEncoder.Metadata.Serialization
 {
@@ -18,20 +19,36 @@ namespace Sinch.MessageEncoder.Metadata.Serialization
 
         internal static SerializationMetadata[] Create(Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+
             PropertyInfo[] properties = type.GetProperties();
 
-            return properties
+            var propertiesWithAttributes = properties
                 .Where(prop => prop.GetCustomAttribute<SerializationOrderAttribute>() is not null)
                 .Select(prop =>
                 {
                     var result = new SerializationMetadata(
-                        prop.GetCustomAttribute(typeof(SerializationOrderAttribute)) as SerializationOrderAttribute, prop);
+                        prop.GetCustomAttribute(typeof(SerializationOrderAttribute)) as SerializationOrderAttribute,
+                        prop);
 
                     return result;
                 })
-                .OrderBy(data => data.Attribute.Order)
-                .ToArray(); ;
+                .ToArray();
+
+            var grouped = propertiesWithAttributes.GroupBy(prop => prop.Attribute.Order);
+            var moreThanOnce = grouped.Where(group => group.Count() > 1).ToArray();
+
+            if (moreThanOnce.Any())
+            {
+                var message = string.Join("", moreThanOnce.Select(x => x.Key));
+                
+                throw new InvalidSerializationOrderException(
+                   $"Unable to build metadata. Some Property orders are duplicated. {message}"
+                );
+            }
+
+            return propertiesWithAttributes;
         }
     }
 }

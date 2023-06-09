@@ -14,11 +14,12 @@ namespace Sinch.MessageEncoder.Serializers.Default
     {
         private const int PropertyHeaderLength = 2;
         private static readonly Dictionary<Type, SerializationMetadata[]> HeadersMetadata = default;
+
         static DefaultHeadersSerializer()
         {
-            HeadersMetadata = AppDomain.CurrentDomain
-                .GetSubclassesOf<MessageHeader>()
-                .ToDictionary(type => type, SerializationMetadata.Create);
+                HeadersMetadata = AppDomain.CurrentDomain
+                    .GetSubclassesOf<MessageHeader>()
+                    .ToDictionary(type => type, SerializationMetadata.Create);
         }
 
         public MessageHeader Deserialize(Type headersType, MessageHeaderTransport headersTransport)
@@ -93,7 +94,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
 
                     if (value is not null)
                     {
-                        headers[data.Attribute.HeaderName] = value;
+                        headers[data.Attribute.PropertyName] = value;
                     }
 
                     start += PropertyHeaderLength + currentPropertyLength;

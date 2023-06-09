@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -10,7 +10,6 @@ namespace Sinch.MessageEncoder.Extensions
     {
         public static IEnumerable<byte> GetBytes(this object data)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
             return data switch
             {
                 // Out of some reason BitConverter interprets single byte as 2-byte digit ?? 
@@ -20,8 +19,10 @@ namespace Sinch.MessageEncoder.Extensions
                 long @long => BitConverter.GetBytes(@long),
                 float @float => BitConverter.GetBytes(@float),
                 double @double => BitConverter.GetBytes(@double),
+                bool @bool => BitConverter.GetBytes(@bool),
                 string @string => System.Text.Encoding.ASCII.GetBytes(@string),
-                _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
+                null => Array.Empty<byte>(),
+            _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
             };
         }
 
@@ -36,152 +37,111 @@ namespace Sinch.MessageEncoder.Extensions
                 string @string => __toByteArrayString(@string),
                 float @float => __toByteArraySingle(@float),
                 double @double => __toByteArrayDouble(@double),
-                bool @boolean => new byte[]{ @boolean is true ? (byte) 1 : (byte) 0 },
-                byte[] @bytes => @bytes,
-                object[] @objects => @objects.SelectMany(@o => @o.ToByteArray()).ToArray(),
+                bool @boolean => new[]{ @boolean ? (byte) 1 : (byte) 0 },
                 null => Array.Empty<byte>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(@object), @object, null)
+                _ => throw new ArgumentException($"Argument was invalid. {@object.GetType().Name} is not supported.", $"{nameof(@object)}", null)
             };
-        }
-
-        public static short ToInt16(this byte[] @object)
-        {
-            return (short)(@object[0] | (@object[1] << 8));
-        }
-
-        public static short ToInt16(this Span<byte> @object)
-        {
-            return (short)(@object[0] | (@object[1] << 8));
         }
 
         public static short ToInt16(this ReadOnlySpan<byte> @object)
         {
-            return (short)(@object[0] | (@object[1] << 8));
+            if (@object.Length is 2) return (short)(@object[0] | (@object[1] << 8));
+            throw new ArgumentException($"Required Span Length is 2");
         }
 
         public static short? ToNullableInt16(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is not 0)
-            {
-                return (short)(@object[0] | (@object[1] << 8));
-            }
-
-            return default;
-        }
-
-        public static int ToInt32(this byte[] @object)
-        {
-            return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
-        }
-
-        public static int ToInt32(this Span<byte> @object)
-        {
-            return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            if (@object.Length is 2) return (short)(@object[0] | (@object[1] << 8));
+            if (@object.Length is 0) return null;
+            throw new ArgumentException($"Required Span Length is 2");
         }
 
         public static int ToInt32(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is not 0)
-            {
-                return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
-            }
-
-            return 0;
+            if (@object.Length is 4) return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            throw new ArgumentException($"Required Span Length is 4");
         }
 
         public static int? ToNullableInt32(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is not 0)
-            {
-                return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
-            }
-
-            return null;
-        }
-
-        public static long ToInt64(this Span<byte> @object)
-        {
-            return BitConverter.ToInt64(@object);
+            if (@object.Length is 4) return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            if (@object.Length is 0) return null;
+            throw new ArgumentException($"Required Span Length is 4");
         }
 
         public static long ToInt64(this ReadOnlySpan<byte> @object)
         {
-            return BitConverter.ToInt64(@object);
+            if (@object.Length is 8) return BitConverter.ToInt64(@object);
+            throw new ArgumentException($"Required Span Length is 8");
         }
 
         public static long? ToNullableInt64(this ReadOnlySpan<byte> @object)
         {
-            return BitConverter.ToInt64(@object);
+            if (@object.Length is 8) return  BitConverter.ToInt64(@object);
+            if (@object.Length is 0) return null;
+            throw new ArgumentException($"Required Span Length is 8");
         }
 
         public static string GetString(this ReadOnlySpan<byte> @object)
         {
-            return @object.Length is not 0
-                ? Encoding.ASCII.GetString(@object) 
-                : null;
+            if (@object.Length is 0) return string.Empty;
+            return Encoding.ASCII.GetString(@object);
         }
 
         public static float ToSingle(this ReadOnlySpan<byte> @object)
         {
-            return BitConverter.ToSingle(@object);
+            if (@object.Length == 4) return BitConverter.ToSingle(@object);
+            throw new ArgumentException("Required Span Length is 4");
         }
 
         public static float? ToNullableSingle(this ReadOnlySpan<byte> @object)
         {
-            return @object.Length is not 0 
-                ? BitConverter.ToSingle(@object) 
-                : default(float?);
+            if (@object.Length == 4) return BitConverter.ToSingle(@object);
+            if (@object.Length is 0) return null;
+            throw new ArgumentException("Required Span Length is 4");
         }
 
         public static bool ToBoolean(this ReadOnlySpan<byte> @object)
         {
-            return BitConverter.ToBoolean(@object);
+            if (@object.Length == 1) return BitConverter.ToBoolean(@object);
+            throw new ArgumentException("Required Span Length is 1");
+        }
+
+        public static bool? ToNullableBoolean(this ReadOnlySpan<byte> @object)
+        {
+            if (@object.Length == 1) return BitConverter.ToBoolean(@object);
+            if (@object.Length is 0) return null;
+            throw new ArgumentException("Required Span Length is 1");
         }
 
         public static double ToDouble(this ReadOnlySpan<byte> @object)
         {
-            return BitConverter.ToDouble(@object);
+            if (@object.Length == 8) return BitConverter.ToDouble(@object);
+            throw new ArgumentException("Required Span Length is 8");
         }
 
         public static double? ToNullableDouble(this ReadOnlySpan<byte> @object)
         {
-            return @object.Length is not 0 
-                ? BitConverter.ToDouble(@object) 
-                : default(double?);
-        }
-
-        public static long ToInt64(this byte[] @object)
-        {
-            return BitConverter.ToInt64(@object);
-        }
-
-        public static byte ToInt8(this byte[] @object)
-        {
-            return @object[0];
-        }
-
-        public static byte ToInt8(this Span<byte> @object)
-        {
-            return @object[0];
+            if (@object.Length == 8) return BitConverter.ToDouble(@object);
+            if (@object.Length is 0) return null;
+            throw new ArgumentException("Required Span Length is 8");
         }
 
         public static byte ToInt8(this ReadOnlySpan<byte> span)
         {
-            return span[0];
+            if (span.Length == 1) return span[0];
+            throw new ArgumentException("Required Span Length is 1");
         }
 
         public static byte? ToNullableInt8(this ReadOnlySpan<byte> span)
         {
-            if (span.Length is not 0)
-            {
-                return span[0];
-            }
-            return default;
+            if (span.Length == 1) return span[0];
+            if (span.Length is 0) return null;
+            throw new ArgumentException("Required Span Length is 1");
         }
 
         private static byte[] __toByteArrayByte(this byte @object)
         {
-            if (@object <= 0) throw new ArgumentOutOfRangeException(nameof(@object));
             return new[] { @object };
         }
 

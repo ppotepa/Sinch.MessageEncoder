@@ -1,15 +1,22 @@
 ﻿using Sinch.MessageEncoder.Attributes;
 using System;
 using System.Reflection;
+using Sinch.MessageEncoder.Serializers.Default;
 
 namespace Sinch.MessageEncoder.Extensions
 {
     internal static class CustomTypeExtensions
     {
-        public static Type ObtainSerializer(this Type type)
+        public static Type ObtainHeaderSerializer(this Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer;
+            return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer 
+                   ?? typeof(DefaultHeadersSerializer);
+        }
+
+        public static Type ObtainPayloadSerializer(this Type type)
+        {
+            return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer
+                   ?? typeof(DefaultPayloadSerializer);
         }
 
         public static bool IsGenericTypeCandidate(this Type type, Type openGenericType)

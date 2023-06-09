@@ -1,4 +1,5 @@
-﻿using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Exceptions;
+using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Transport;
@@ -25,7 +26,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
             var serializers = GetSerializers
             (
                 messageBinary: messageBinary,
-                targetBase: out var target,
+                target: out var target,
                 messageTransport: out var messageTransport
             );
 
@@ -68,15 +69,12 @@ namespace Sinch.MessageEncoder.Factories.Messages
                                             => types.ToDictionary(type => type.GetMessageTypeCode(), type => type);
 
         private static (IHeadersSerializer headers, IPayloadSerializer payload) GetSerializers(ReadOnlySpan<byte> messageBinary,
-            out Type targetBase, out MessageTransport messageTransport)
+            out Type target, out MessageTransport messageTransport)
         {
             messageTransport = MessageTransport.FromSpan(messageBinary);
-            targetBase = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE].BaseType;
+            target = MessageTypes[messageTransport.HeaderTransportInfo.MSG_TYPE].BaseType!;
 
-            if (targetBase is { BaseType: null }) 
-                throw new InvalidOperationException("Message Type not supported");
-
-            return Create(targetBase);
+            return Create(target);
         }
     }
 }

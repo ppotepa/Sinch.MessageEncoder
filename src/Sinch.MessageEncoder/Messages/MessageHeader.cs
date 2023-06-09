@@ -1,9 +1,8 @@
-﻿using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Builders;
+using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages.Transport;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace Sinch.MessageEncoder.Messages
 {
@@ -52,21 +51,5 @@ namespace Sinch.MessageEncoder.Messages
             this.Timestamp = headersTransport.MSG_TIMESTAMP;
             this.MessageType = headersTransport.MSG_TYPE;
         }
-
-        public THeader Map<THeader, TProperty>(TProperty value, Expression<Func<THeader, TProperty>> property, Func<byte[], byte[]> span)
-            where THeader : MessageHeader
-        {
-            var body = Expression.MakeBinary(
-                ExpressionType.Assign, property.Body, Expression.Constant(value)
-            );
-
-            var action = Expression.Lambda<Action<THeader>>(body, property.Parameters).Compile();
-            action((THeader)this);
-            return (THeader)this;
-        }
-    }
-
-    public interface IBuildable
-    {
     }
 }

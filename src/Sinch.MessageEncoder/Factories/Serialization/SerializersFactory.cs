@@ -14,28 +14,26 @@ namespace Sinch.MessageEncoder.Factories.Serialization
 
         static SerializersFactory()
         {
-            HeadersSerializers = AppDomain.CurrentDomain
+            HeadersSerializers ??= AppDomain.CurrentDomain
                 .GetSubclassesOf<MessageHeader>()
-                .ToDictionary(payload => payload, CustomTypeExtensions.ObtainSerializer);
+                .ToDictionary(payload => payload, CustomTypeExtensions.ObtainHeaderSerializer);
 
             PayloadSerializers ??= AppDomain.CurrentDomain
                 .GetSubclassesOf<Payload>()
-                .ToDictionary(payload => payload, CustomTypeExtensions.ObtainSerializer);
+                .ToDictionary(payload => payload, CustomTypeExtensions.ObtainPayloadSerializer);
 
         }
 
         private static ISerializer CreateSerializer(Type type)
         {
-            if (type is null) 
+            if (type is null)
                 throw new ArgumentNullException(nameof(type));
 
             if (typeof(Payload).IsAssignableFrom(type))
                 return Activator.CreateInstance(PayloadSerializers[type]) as ISerializer;
-            
 
             if (typeof(MessageHeader).IsAssignableFrom(type))
                 return Activator.CreateInstance(HeadersSerializers[type]) as ISerializer;
-            
 
             throw new ArgumentException(
                 $"{type.Name} is not assignable from {nameof(Payload)} nor from {nameof(MessageHeader)}."

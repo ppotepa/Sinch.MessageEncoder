@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Messages\Payload\" />
-    <Folder Include="Builders\" />
     <Folder Include="Serializers\Default\Properties\" />
   </ItemGroup>
 

@@ -1,12 +1,12 @@
-﻿using Sinch.MessageEncoder.Attributes;
-using Sinch.MessageEncoder.Extensions;
-using Sinch.MessageEncoder.Messages;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Exceptions;
+using Sinch.MessageEncoder.Extensions;
+using Sinch.MessageEncoder.Messages;
 
-namespace Sinch.MessageEncoder.PoC.Builders
+namespace Sinch.MessageEncoder.Builders
 {
     public class MessageBuilder<THeaders, TPayload> :   ISetFromBuildingStep<THeaders, TPayload>, 
                                                         ISetTimeStampBuildingStep<THeaders, TPayload>, 
@@ -70,7 +70,7 @@ namespace Sinch.MessageEncoder.PoC.Builders
         {
             if (_additionalHeaders.Count < this._maxHeaders)
             {
-                string expectedHeaderName = _headersAttributes[_additionalHeaders.Count].HeaderName;
+                string expectedHeaderName = _headersAttributes[_additionalHeaders.Count].PropertyName;
 
                 if (expectedHeaderName == name)
                 {
@@ -123,15 +123,15 @@ namespace Sinch.MessageEncoder.PoC.Builders
         {
             if (_headersAttributes.Length > _additionalHeaders.Count)
             {
-                throw new InvalidOperationException($"Invalid amount of headers supplied for {typeof(THeaders).Name}. " +
+                throw new InvalidAmountOfHeadersSuppliedException($"Invalid amount of headers supplied for {typeof(THeaders).Name}. " +
                     $"Expected {_headersAttributes.Length} found {_additionalHeaders.Count}"
                 );
             }
 
             if (_payloadAttributes.Length > _payloadProperties.Count)
             {
-                throw new InvalidOperationException($"Invalid amount of payload properties supplied for {typeof(TPayload).Name}. " +
-                $"Expected {_payloadAttributes.Length} found {_payloadProperties.Count}");
+                throw new InvalidAmountOfPayloadPropertiesSuppliedException($"Invalid amount of payload properties supplied for {typeof(TPayload).Name}. " +
+                                                                  $"Expected {_payloadAttributes.Length} found {_payloadProperties.Count}");
             }
 
             byte[] bytes = GetBinary();
@@ -163,32 +163,6 @@ namespace Sinch.MessageEncoder.PoC.Builders
             this._defaultBytes.AddRange(payloadBytes);
 
             return _defaultBytes.ToArray();
-        }
-
-        public TMessage Build<TMessage>() where TMessage : Message<THeaders, TPayload>
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public class PayloadPropertiesCountExceeded : Exception
-    {
-        public PayloadPropertiesCountExceeded(string message)
-        {
-        }
-    }
-
-    public class HeadersCountExceededException : Exception
-    {
-        public HeadersCountExceededException(string message) : base(message)
-        { 
-        }
-    }
-
-    public class InvalidHeaderNameException : Exception
-    {
-        public InvalidHeaderNameException(string message) : base(message)
-        {
         }
     }
 

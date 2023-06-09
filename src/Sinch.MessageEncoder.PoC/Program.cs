@@ -1,13 +1,12 @@
-﻿using Sinch.MessageEncoder.Factories.Messages;
+﻿using Sinch.MessageEncoder.Builders;
+using Sinch.MessageEncoder.Factories.Messages;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Default.Text;
-using Sinch.MessageEncoder.PoC.Builders;
 using Sinch.MessageEncoder.PoC.Diagnostics;
 using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Linq;
-using Sinch.MessageEncoder.Extensions;
 
 namespace Sinch.MessageEncoder.PoC
 {

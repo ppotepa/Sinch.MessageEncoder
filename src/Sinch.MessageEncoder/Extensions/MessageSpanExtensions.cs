@@ -26,8 +26,17 @@ namespace Sinch.MessageEncoder.Extensions
         public static byte GetMessageType(this ReadOnlySpan<byte> messageSpan) 
             => messageSpan[MSG_TYPE_INDEX];
 
-        public static ReadOnlySpan<byte> GetAllHeaders(this ReadOnlySpan<byte> messageSpan, long headersLength) =>
-            messageSpan[(HEADERS_LENGTH_FIRST_BYTE_INDEX + 8)..((int)headersLength + (HEADERS_LENGTH_FIRST_BYTE_INDEX + 8))];
-        
+        public static ReadOnlySpan<byte> GetAllHeaders(this ReadOnlySpan<byte> messageSpan, long headersLength)
+        {
+            try
+            {
+                return messageSpan[(HEADERS_LENGTH_FIRST_BYTE_INDEX + 8)..((int)headersLength + (HEADERS_LENGTH_FIRST_BYTE_INDEX + 8))];
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new InvalidHeadersLengthException(
+                    $"Headers length was invalid. Message length : {messageSpan.Length}, headersLengthSupplied : {headersLength}", ex);
+            }
+        }
     }
 }

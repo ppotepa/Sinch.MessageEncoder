@@ -1,5 +1,6 @@
 ﻿using Sinch.MessageEncoder.Factories.Messages;
 using System;
+using Sinch.MessageEncoder.Builders;
 
 namespace Sinch.MessageEncoder.Messages
 {
@@ -54,27 +55,7 @@ namespace Sinch.MessageEncoder.Messages
 
         protected Message() { }
 
-        public override THeadersType Headers
-        {
-            get
-            {
-                _headers ??= new THeadersType();
-                return _headers as THeadersType;
-            }
-        }
-
-        public override TPayloadType Payload
-        {
-            get
-            {
-                _payload ??= new TPayloadType();
-                return _payload as TPayloadType;
-            }
-        }
-
-        public void AddHeader(string key, object value)
-        {
-            this.Headers[key] = value;
-        }
+        public override THeadersType Headers => base.Headers as THeadersType;
+        public override TPayloadType Payload => base.Payload as TPayloadType;
     }
 }

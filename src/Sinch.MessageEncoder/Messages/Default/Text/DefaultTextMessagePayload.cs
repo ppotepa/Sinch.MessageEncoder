@@ -10,12 +10,7 @@ namespace Sinch.MessageEncoder.Messages.Default.Text
         {
         }
 
-        public DefaultTextMessagePayload(string textMessageBody)
-        {
-            TextMessageBody = textMessageBody;
-        }
-
-        [SerializationOrder(Order = 1, HeaderName = nameof(TextMessageBody))]
+        [SerializationOrder(Order = 1, PropertyName = nameof(TextMessageBody))]
         public string TextMessageBody { get; set; }
     }
 }
