@@ -10,20 +10,20 @@ namespace Sinch.MessageEncoder.Extensions
         private const int MSG_TYPE_INDEX = 24;
         private const int HEADERS_LENGTH_FIRST_BYTE_INDEX = 25;
 
-        public static long GetMessageFrom(this ReadOnlySpan<byte> messageSpan) 
+        public static long GetMessageFrom(this ReadOnlySpan<byte> messageSpan)
             => MemoryMarshal.Read<long>(messageSpan[..LONG_LENGTH]);
 
         public static long GetMessageTo(this ReadOnlySpan<byte> messageSpan) =>
-            MemoryMarshal.Read<long>(messageSpan[LONG_LENGTH.. (LONG_LENGTH * 2)]);
-        
+            MemoryMarshal.Read<long>(messageSpan[LONG_LENGTH..(LONG_LENGTH * 2)]);
+
 
         public static long GetMessageTimestamp(this ReadOnlySpan<byte> messageSpan) =>
-            MemoryMarshal.Read<long>(messageSpan[(LONG_LENGTH * 2).. MSG_TYPE_INDEX]);
+            MemoryMarshal.Read<long>(messageSpan[(LONG_LENGTH * 2)..MSG_TYPE_INDEX]);
 
         public static long GetMessageHeadersLength(this ReadOnlySpan<byte> messageSpan) =>
-            MemoryMarshal.Read<long>(messageSpan[HEADERS_LENGTH_FIRST_BYTE_INDEX.. (HEADERS_LENGTH_FIRST_BYTE_INDEX + 8)]);
+            MemoryMarshal.Read<long>(messageSpan[HEADERS_LENGTH_FIRST_BYTE_INDEX..(HEADERS_LENGTH_FIRST_BYTE_INDEX + 8)]);
 
-        public static byte GetMessageType(this ReadOnlySpan<byte> messageSpan) 
+        public static byte GetMessageType(this ReadOnlySpan<byte> messageSpan)
             => messageSpan[MSG_TYPE_INDEX];
 
         public static ReadOnlySpan<byte> GetAllHeaders(this ReadOnlySpan<byte> messageSpan, long headersLength)

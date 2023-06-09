@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Sinch.MessageEncoder.Attributes;
+﻿using Sinch.MessageEncoder.Attributes;
 using Sinch.MessageEncoder.Exceptions;
 using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Sinch.MessageEncoder.Builders
 {
-    public class MessageBuilder<THeaders, TPayload> :   ISetFromBuildingStep<THeaders, TPayload>, 
-                                                        ISetTimeStampBuildingStep<THeaders, TPayload>, 
-                                                        ISetToBuildingStep<THeaders, TPayload>, 
+    public class MessageBuilder<THeaders, TPayload> : ISetFromBuildingStep<THeaders, TPayload>,
+                                                        ISetTimeStampBuildingStep<THeaders, TPayload>,
+                                                        ISetToBuildingStep<THeaders, TPayload>,
                                                         ISetMsgTypeBuildingStep<THeaders, TPayload>,
                                                         IAddHeaderBuildingStep<THeaders, TPayload>,
                                                         IAddPayloadPropertyStep<THeaders, TPayload>
@@ -76,7 +76,7 @@ namespace Sinch.MessageEncoder.Builders
                 {
                     this._additionalHeaders.Add(new KeyValuePair<string, object>(name, value));
                     var currentValueByteLength = value.ToByteArray().Length;
-                    this._additionalHeadersLength += (2 + currentValueByteLength); 
+                    this._additionalHeadersLength += (2 + currentValueByteLength);
                     return this;
                 }
 

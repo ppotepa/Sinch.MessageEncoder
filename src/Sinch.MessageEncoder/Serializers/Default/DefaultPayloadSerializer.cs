@@ -19,7 +19,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
         public Payload Deserialize(Type payloadType, ReadOnlySpan<byte> payloadSpan)
         {
             Payload payload = Activator.CreateInstance(payloadType) as Payload;
-            
+
             if (payloadSpan.Length > 0)
             {
                 DeserializeProperties(payloadSpan, payload);

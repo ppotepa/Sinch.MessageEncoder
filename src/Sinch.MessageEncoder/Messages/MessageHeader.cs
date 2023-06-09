@@ -22,7 +22,7 @@ namespace Sinch.MessageEncoder.Messages
 
         public long To { get; set; }
 
-        public long HeadersLength 
+        public long HeadersLength
             => this.Headers.Values.Select(x => x.ToByteArray().Length).Sum() + (this.Headers.Count * 2);
 
         internal virtual byte[] DefaultBytes => new object[] {

@@ -21,7 +21,7 @@ namespace Sinch.MessageEncoder.Extensions
                 bool @bool => BitConverter.GetBytes(@bool),
                 string @string => System.Text.Encoding.ASCII.GetBytes(@string),
                 null => Array.Empty<byte>(),
-            _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
+                _ => throw new ArgumentException($"Argument was invalid. {data.GetType().Name} is not supported.", $"{nameof(data)}", null)
             };
         }
 
@@ -36,7 +36,7 @@ namespace Sinch.MessageEncoder.Extensions
                 string @string => __toByteArrayString(@string),
                 float @float => __toByteArraySingle(@float),
                 double @double => __toByteArrayDouble(@double),
-                bool @boolean => new[]{ @boolean ? (byte) 1 : (byte) 0 },
+                bool @boolean => new[] { @boolean ? (byte)1 : (byte)0 },
                 null => Array.Empty<byte>(),
                 _ => throw new ArgumentException($"Argument was invalid. {@object.GetType().Name} is not supported.", $"{nameof(@object)}", null)
             };
@@ -76,7 +76,7 @@ namespace Sinch.MessageEncoder.Extensions
 
         public static long? ToNullableInt64(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is 8) return  BitConverter.ToInt64(@object);
+            if (@object.Length is 8) return BitConverter.ToInt64(@object);
             if (@object.Length is 0) return null;
             throw new ArgumentException($"Required Span Length is 8");
         }
@@ -186,7 +186,7 @@ namespace Sinch.MessageEncoder.Extensions
                 (byte)(@object >> 8)
             };
         }
-        
+
         private static byte[] __toByteArrayString(this string @object)
         {
             var bytes = new byte[@object.Length];

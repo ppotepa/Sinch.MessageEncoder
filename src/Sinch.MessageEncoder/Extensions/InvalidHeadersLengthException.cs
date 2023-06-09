@@ -6,7 +6,7 @@ namespace Sinch.MessageEncoder.Extensions
     {
         public InvalidHeadersLengthException(string message, Exception inner) : base(message, inner)
         {
-        
+
         }
     }
 }

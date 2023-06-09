@@ -1,8 +1,8 @@
 ﻿using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Exceptions;
 using System;
 using System.Linq;
 using System.Reflection;
-using Sinch.MessageEncoder.Exceptions;
 
 namespace Sinch.MessageEncoder.Metadata.Serialization
 {
@@ -42,7 +42,7 @@ namespace Sinch.MessageEncoder.Metadata.Serialization
             if (moreThanOnce.Any())
             {
                 var message = string.Join("", moreThanOnce.Select(x => x.Key));
-                
+
                 throw new InvalidSerializationOrderException(
                    $"Unable to build metadata. Some Property orders are duplicated. {message}"
                 );

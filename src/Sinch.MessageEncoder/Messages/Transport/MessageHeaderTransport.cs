@@ -10,7 +10,7 @@ namespace Sinch.MessageEncoder.Messages.Transport
         public readonly long MSG_FROM = default;
         public readonly long MSG_TIMESTAMP = default;
         public readonly long MSG_TO = default;
-        public readonly byte MSG_TYPE = default;        
+        public readonly byte MSG_TYPE = default;
         public ReadOnlySpan<byte> ADDITIONAL_HEADERS_BYTES = default;
 
         public MessageHeaderTransport()
@@ -25,7 +25,7 @@ namespace Sinch.MessageEncoder.Messages.Transport
 
         private MessageHeaderTransport
         (
-            long msgFrom, long msgTo, long msgTimestamp, 
+            long msgFrom, long msgTo, long msgTimestamp,
             byte msgType, long headersLength, ReadOnlySpan<byte> additionalHeadersBytes) : this()
         {
             MSG_FROM = msgFrom;

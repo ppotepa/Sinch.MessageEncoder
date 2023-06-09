@@ -8,8 +8,6 @@ using Sinch.MessageEncoder.Metadata.Serialization;
 using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Linq;
-using Sinch.MessageEncoder.Messages.Transport;
-using Sinch.MessageEncoder.Serializers.Default;
 
 // ReSharper disable InconsistentNaming
 namespace Sinch.MessageEncoder.CustomMessages.Tests

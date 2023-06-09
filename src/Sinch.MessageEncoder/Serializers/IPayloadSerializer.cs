@@ -1,5 +1,5 @@
-﻿using System;
-using Sinch.MessageEncoder.Messages;
+﻿using Sinch.MessageEncoder.Messages;
+using System;
 
 namespace Sinch.MessageEncoder.Serializers
 {

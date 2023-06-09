@@ -1,5 +1,4 @@
-﻿using Sinch.MessageEncoder.Exceptions;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Factories.Serialization;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Transport;
@@ -46,7 +45,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
             return instance as Message;
         }
 
-        public static Message Create(byte[] messageBinary) 
+        public static Message Create(byte[] messageBinary)
             => Create(new ReadOnlySpan<byte>(messageBinary));
 
         public static byte[] Serialize<TMessage>(TMessage message)
@@ -56,7 +55,7 @@ namespace Sinch.MessageEncoder.Factories.Messages
 
             var headers = serializers.headers.Serialize(message.Headers as MessageHeader).ToArray();
             var payload = serializers.payload.Serialize(message.Payload as Payload).ToArray();
-           
+
             return headers.Concat(payload).ToArray();
         }
 

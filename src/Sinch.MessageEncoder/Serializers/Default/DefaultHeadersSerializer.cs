@@ -1,4 +1,5 @@
-﻿using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Exceptions;
+using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
 using Sinch.MessageEncoder.Messages.Transport;
 using Sinch.MessageEncoder.Metadata.Serialization;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Sinch.MessageEncoder.Exceptions;
 
 namespace Sinch.MessageEncoder.Serializers.Default
 {
@@ -17,9 +17,9 @@ namespace Sinch.MessageEncoder.Serializers.Default
 
         static DefaultHeadersSerializer()
         {
-                HeadersMetadata = AppDomain.CurrentDomain
-                    .GetSubclassesOf<MessageHeader>()
-                    .ToDictionary(type => type, SerializationMetadata.Create);
+            HeadersMetadata = AppDomain.CurrentDomain
+                .GetSubclassesOf<MessageHeader>()
+                .ToDictionary(type => type, SerializationMetadata.Create);
         }
 
         public MessageHeader Deserialize(Type headersType, MessageHeaderTransport headersTransport)
@@ -100,7 +100,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
                     start += PropertyHeaderLength + currentPropertyLength;
                 }
             }
-            else 
+            else
                 throw new InvalidOperationException($"{headersType.Name} is not valid Header Type.");
 
             return headers;

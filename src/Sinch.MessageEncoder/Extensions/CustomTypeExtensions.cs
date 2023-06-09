@@ -1,7 +1,7 @@
 ﻿using Sinch.MessageEncoder.Attributes;
+using Sinch.MessageEncoder.Serializers.Default;
 using System;
 using System.Reflection;
-using Sinch.MessageEncoder.Serializers.Default;
 
 namespace Sinch.MessageEncoder.Extensions
 {
@@ -9,7 +9,7 @@ namespace Sinch.MessageEncoder.Extensions
     {
         public static Type ObtainHeaderSerializer(this Type type)
         {
-            return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer 
+            return (type.GetCustomAttribute(typeof(UseSerializerAttribute)) as UseSerializerAttribute)?.Serializer
                    ?? typeof(DefaultHeadersSerializer);
         }
 

@@ -1,6 +1,5 @@
 ﻿using Sinch.MessageEncoder.Factories.Messages;
 using System;
-using Sinch.MessageEncoder.Builders;
 
 namespace Sinch.MessageEncoder.Messages
 {

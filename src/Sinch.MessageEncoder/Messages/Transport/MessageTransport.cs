@@ -1,5 +1,5 @@
-﻿using System;
-using Sinch.MessageEncoder.Extensions;
+﻿using Sinch.MessageEncoder.Extensions;
+using System;
 
 // ReSharper disable InconsistentNaming
 
