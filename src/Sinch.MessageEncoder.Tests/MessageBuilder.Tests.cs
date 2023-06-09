@@ -104,18 +104,154 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
         };
 
         [Test]
-        public void MessageBuilder_Serializes_Basic_Headers_Correctly()
+        public void BinarySerializer_Works_Against_DefaultTextMessage()
         {
-            //var binary = new BinaryMessageBuilder(1, 2, 1685193094, 1, 0).Serialize().ToArray();
-            var binary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
+            byte[] builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
                 .From(1)
                 .To(2)
                 .Timestamp(1685193094)
                 .MsgType(1)
+                .AddHeader("recipient-name", "AAAAA")
+                .AddHeader("sender-name", "AAAAA")
+                .AddHeader("is-message-unread", true)
                 .EndHeaders()
+                .AddPayloadProperty("TextMessageBody", "AAAAA")
                 .GetBinary();
 
-            Assert.AreEqual(assertHeaderBytes, binary);
+            var myTestMessage = new DefaultTextMessage
+            {
+                Headers = new DefaultTextMessageHeaders
+                {
+                    From = 1,
+                    To = 2,
+                    MessageType = 1,
+                    Timestamp = 1685193094,
+                    IsMessageUnread = true,
+                    RecipientName = "AAAAA",
+                    SenderName = "AAAAA"
+                },
+
+                Payload = new DefaultTextMessagePayload
+                {
+                    TextMessageBody = "AAAAA"
+                }
+            };
+
+            var myTestMessageArray = Message.ToBinary(myTestMessage).ToArray();
+
+            Console.WriteLine($"BuilderMessage Length {builderMessageBinary.Length} {string.Join(",", builderMessageBinary.ToArray())}");
+            Console.WriteLine($"Message.Create Length {myTestMessageArray.Length} {string.Join(",", myTestMessageArray)}");
+
+            var myTestMessageBinary = Message.ToBinary(myTestMessage).ToArray();
+            Assert.AreEqual(builderMessageBinary, myTestMessageBinary);
+        }
+
+        [Test]
+        public void Creating_A_Message_With_Null_Payload_And_Transport_Throws_Exception()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<ArgumentNullException>(() => new DefaultTextMessage(new DefaultTextMessageHeaders(), null));
+                Assert.Throws<ArgumentNullException>(() => new DefaultTextMessage(null, new DefaultTextMessagePayload()));
+                Assert.DoesNotThrow(() => new DefaultTextMessage(new DefaultTextMessageHeaders(), new DefaultTextMessagePayload()));
+            });
+        }
+
+        [Test]
+        public void Custom_Bit_Converter_Matches_Results_With_Built_In_One()
+        {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
+
+            Assert.Multiple(() =>
+            {
+                // Out of some reason BitConverter interprets single byte as 2-byte digit.
+                Assert.AreEqual(BitConverter.GetBytes((short)ONE).Take(1), ONE.ToByteArray());
+                Assert.AreEqual(BitConverter.GetBytes(THOUSAND), THOUSAND.ToByteArray());
+                Assert.AreEqual(BitConverter.GetBytes(MILLION), MILLION.ToByteArray());
+                Assert.AreEqual(BitConverter.GetBytes(BILLION), BILLION.ToByteArray());
+                Assert.AreEqual(BitConverter.GetBytes(TRILLION), TRILLION.ToByteArray());
+
+                Assert.Throws<ArgumentException>(() => dictionary.ToByteArray());
+                Assert.Throws<ArgumentException>(() => dictionary.GetBytes());
+
+                Assert.That(() => ((object)null).GetBytes(), Has.Exactly(0).Items.Empty);
+                Assert.That(() => ((object)null).ToByteArray(), Has.Exactly(0).Items.Empty);
+
+                Assert.That(() => true.ToByteArray(), Has.Length.EqualTo(1).And.ItemAt(0).EqualTo(1));
+                Assert.That(() => false.ToByteArray(), Has.Length.EqualTo(1).And.ItemAt(0).EqualTo(0));
+
+                Assert.That(() => new ReadOnlySpan<byte>(new byte[] { }).GetString(), Has.Exactly(0).Items.Empty);
+                Assert.That(() => new ReadOnlySpan<byte>(new byte[] { 65, 65 }).GetString(), Has.All.EqualTo('A').And.Exactly(2).Items);
+
+
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToBoolean());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToBoolean());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToNullableBoolean());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToNullableBoolean());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableSingle(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableSingle());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToSingle());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt32(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToInt32());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableInt32());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt64(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToInt64());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableInt64());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableDouble(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableDouble());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToDouble());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt8(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToNullableInt8());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToInt8());
+
+                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt16(), Is.EqualTo(null));
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1, 1 }).ToNullableInt16());
+                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1, 1 }).ToInt16());
+
+            });
+        }
+
+        [Test]
+        public void Default_Headers_Serializer_Should_Not_Accept_Wrong_Types()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.Throws<InvalidOperationException>(
+                    () => new DefaultHeadersSerializer().Deserialize(typeof(TestMessage), new MessageHeaderTransport()));
+
+                Assert.Throws<InvalidOperationException>(
+                    () => new DefaultHeadersSerializer().Deserialize(typeof(TestMessage), new MessageHeaderTransport()));
+
+            });
+        }
+
+        [Test]
+        public void Default_Payload_Serializer_Returns_Empty_Array_If_Payload_Is_Null()
+        {
+            var result = new DefaultPayloadSerializer().Serialize<TestMessagePayload>(null).ToArray();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result, Is.Not.Null);
+                Assert.That(result, Has.Exactly(2).Items.EqualTo(0));
+            });
+        }
+
+        [Test]
+        public void Deserialization_When_Headers_Are_Missing_Throws_An_Exception()
+        {
+            Assert.Throws<InvalidAmountOfHeadersFound>(() => Message.FromBytes(assertBytesHeaderMissing));
+        }
+
+        [Test]
+        public void Deserialization_When_Headers_Length_Is_Invalid_Throws_An_Exception()
+        {
+            Assert.Throws<InvalidHeadersLengthException>(() => Message.FromBytes(assertBytesInvalidHeadersLength));
         }
 
         [Test]
@@ -184,10 +320,36 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
         }
 
         [Test]
+        public void MessageBuilder_Serializes_Assertion_Bytes_Correctly()
+        {
+            Assert.Multiple(() =>
+            {
+                Message resultMessage = Message.FromBytes(assertBytes);
+
+                Assert.That(resultMessage, Is.Not.Null);
+                Assert.That(resultMessage, Is.TypeOf(typeof(TestMessage)));
+            });
+        }
+
+        [Test]
+        public void MessageBuilder_Serializes_Basic_Headers_Correctly()
+        {
+            //var binary = new BinaryMessageBuilder(1, 2, 1685193094, 1, 0).Serialize().ToArray();
+            var binary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(1685193094)
+                .MsgType(1)
+                .EndHeaders()
+                .GetBinary();
+
+            Assert.AreEqual(assertHeaderBytes, binary);
+        }
+        [Test]
         public void MessageBuilder_Serializes_Basic_Headers_Correctly_With_Additional_Headers()
         {
             var defaultSerializerResult = defaultSerializerInput.SelectMany(integer => integer.ToByteArray()).ToArray();
-            var binarySerializerResult = defaultSerializerInput.SelectMany(ObjectExtensions.GetBytes).ToArray();
+            var binarySerializerResult = defaultSerializerInput.SelectMany(BinaryExtensions.GetBytes).ToArray();
 
             var builderMessageBinary = MessageBuilder<TestMessageHeader, TestMessagePayload>.CreateBuilder()
                 .From(1)
@@ -217,112 +379,6 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
 
             Assert.That(testAssertionConditions, Has.Exactly(3).EqualTo(true));
         }
-
-        [Test]
-        public void Deserialization_When_Headers_Are_Missing_Throws_An_Exception()
-        {
-            Assert.Throws<InvalidAmountOfHeadersFound>(() => Message.FromBytes(assertBytesHeaderMissing));
-        }
-
-        [Test]
-        public void Deserialization_When_Headers_Length_Is_Invalid_Throws_An_Exception()
-        {
-            Assert.Throws<InvalidHeadersLengthException>(() => Message.FromBytes(assertBytesInvalidHeadersLength));
-        }
-
-        [Test]
-        public void MessageBuilder_Throws_An_Exception_When_Header_Name_Is_Missing()
-        {
-            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
-                .CreateBuilder()
-                .From(1)
-                .To(2)
-                .Timestamp(1685193094)
-                .MsgType(1)
-                .AddHeader("recipient-name", "AAAAA");
-
-            Assert.Throws<InvalidHeaderNameException>(() => builderMessageBinary.AddHeader<string>("bad-header-name", null));
-        }
-
-        [Test]
-        public void MessageBuilder_Throws_An_Exception_When_Header_Is_Missing()
-        {
-            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
-                .CreateBuilder()
-                .From(1)
-                .To(2)
-                .Timestamp(1685193094)
-                .MsgType(1)
-                .AddHeader("recipient-name", "AAAAA")
-                .EndHeaders();
-
-            Assert.Throws<InvalidAmountOfHeadersSuppliedException>(() => builderMessageBinary.Build());
-        }
-
-        [Test]
-        public void MessageBuilder_Throws_An_Exception_When_Payload_Properties_Are_Missing()
-        {
-            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
-                .CreateBuilder()
-                .From(1)
-                .To(2)
-                .Timestamp(1685193094)
-                .MsgType(1)
-                .AddHeader("recipient-name", "AAAAA")
-                .AddHeader("sender-name", "AAAAA")
-                .AddHeader("is-message-unread", "AAAAA")
-                .EndHeaders();
-
-
-            Assert.Throws<InvalidAmountOfPayloadPropertiesSuppliedException>(() => builderMessageBinary.Build());
-        }
-
-        [Test]
-        public void MessageBuilder_Throws_An_Exception_When_Headers_Count_Is_To_High()
-        {
-            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
-                .CreateBuilder()
-                .From(1)
-                .To(2)
-                .Timestamp(1685193094)
-                .MsgType(1)
-                .AddHeader("recipient-name", "AAAAA")
-                .AddHeader("sender-name", "AAAAA")
-                .AddHeader("is-message-unread", "AAAAA");
-
-            Assert.Throws<HeadersCountExceededException>(() => builderMessageBinary.AddHeader<string>("excessive-header-name", null));
-        }
-
-        [Test]
-        public void MessageBuilder_Throws_An_Exception_When_Payload_Properties_Count_Is_To_High()
-        {
-            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
-                .CreateBuilder()
-                .From(1)
-                .To(2)
-                .Timestamp(1685193094)
-                .MsgType(1)
-                .AddHeader("recipient-name", "AAAAA")
-                .AddHeader("sender-name", "AAAAA")
-                .AddHeader("is-message-unread", "AAAAA")
-                .EndHeaders()
-                .AddPayloadProperty("TextMessageBody", "Some text.");
-
-            Assert.Throws<PayloadPropertiesCountExceeded>(() => builderMessageBinary.AddPayloadProperty<string>("ExcessivePropertyName", null));
-        }
-
-        [Test]
-        public void MessageBuilder_Serializes_Assertion_Bytes_Correctly()
-        {
-            Assert.Multiple(() =>
-            {
-                Message resultMessage = Message.FromBytes(assertBytes);
-
-                Assert.That(resultMessage, Is.Not.Null);
-                Assert.That(resultMessage, Is.TypeOf(typeof(TestMessage)));
-            });
-        }
-
         [Test]
         public void MessageBuilder_Serializes_Message_Back_And_Forth()
         {
@@ -383,116 +439,86 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
         }
 
         [Test]
-        public void BinarySerializer_Works_Against_DefaultTextMessage()
+        public void MessageBuilder_Throws_An_Exception_When_Header_Is_Missing()
         {
-            byte[] builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
+            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
+                .CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(1685193094)
+                .MsgType(1)
+                .AddHeader("recipient-name", "AAAAA")
+                .EndHeaders();
+
+            Assert.Throws<InvalidAmountOfHeadersSuppliedException>(() => builderMessageBinary.Build());
+        }
+
+        [Test]
+        public void MessageBuilder_Throws_An_Exception_When_Header_Name_Is_Missing()
+        {
+            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
+                .CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(1685193094)
+                .MsgType(1)
+                .AddHeader("recipient-name", "AAAAA");
+
+            Assert.Throws<InvalidHeaderNameException>(() => builderMessageBinary.AddHeader<string>("bad-header-name", null));
+        }
+        [Test]
+        public void MessageBuilder_Throws_An_Exception_When_Headers_Count_Is_To_High()
+        {
+            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
+                .CreateBuilder()
                 .From(1)
                 .To(2)
                 .Timestamp(1685193094)
                 .MsgType(1)
                 .AddHeader("recipient-name", "AAAAA")
                 .AddHeader("sender-name", "AAAAA")
-                .AddHeader("is-message-unread", true)
+                .AddHeader("is-message-unread", "AAAAA");
+
+            Assert.Throws<HeadersCountExceededException>(() => builderMessageBinary.AddHeader<string>("excessive-header-name", null));
+        }
+
+        [Test]
+        public void MessageBuilder_Throws_An_Exception_When_Payload_Properties_Are_Missing()
+        {
+            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
+                .CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(1685193094)
+                .MsgType(1)
+                .AddHeader("recipient-name", "AAAAA")
+                .AddHeader("sender-name", "AAAAA")
+                .AddHeader("is-message-unread", "AAAAA")
+                .EndHeaders();
+
+
+            Assert.Throws<InvalidAmountOfPayloadPropertiesSuppliedException>(() => builderMessageBinary.Build());
+        }
+        [Test]
+        public void MessageBuilder_Throws_An_Exception_When_Payload_Properties_Count_Is_To_High()
+        {
+            var builderMessageBinary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>
+                .CreateBuilder()
+                .From(1)
+                .To(2)
+                .Timestamp(1685193094)
+                .MsgType(1)
+                .AddHeader("recipient-name", "AAAAA")
+                .AddHeader("sender-name", "AAAAA")
+                .AddHeader("is-message-unread", "AAAAA")
                 .EndHeaders()
-                .AddPayloadProperty("TextMessageBody", "AAAAA")
-                .GetBinary();
+                .AddPayloadProperty("TextMessageBody", "Some text.");
 
-            var myTestMessage = new DefaultTextMessage
-            {
-                Headers = new DefaultTextMessageHeaders
-                {
-                    From = 1,
-                    To = 2,
-                    MessageType = 1,
-                    Timestamp = 1685193094,
-                    IsMessageUnread = true,
-                    RecipientName = "AAAAA",
-                    SenderName = "AAAAA"
-                },
-
-                Payload = new DefaultTextMessagePayload
-                {
-                    TextMessageBody = "AAAAA"
-                }
-            };
-
-            var myTestMessageArray = Message.ToBinary(myTestMessage).ToArray();
-
-            Console.WriteLine($"BuilderMessage Length {builderMessageBinary.Length} {string.Join(",", builderMessageBinary.ToArray())}");
-            Console.WriteLine($"Message.Create Length {myTestMessageArray.Length} {string.Join(",", myTestMessageArray)}");
-
-            var myTestMessageBinary = Message.ToBinary(myTestMessage).ToArray();
-            Assert.AreEqual(builderMessageBinary, myTestMessageBinary);
+            Assert.Throws<PayloadPropertiesCountExceeded>(() => builderMessageBinary.AddPayloadProperty<string>("ExcessivePropertyName", null));
         }
-
-        [Test]
-        public void Custom_Bit_Converter_Matches_Results_With_Built_In_One()
+        [SetUp]
+        public void Setup()
         {
-            Dictionary<string, string> dictionary = new Dictionary<string, string>();
-
-            Assert.Multiple(() =>
-            {
-                // Out of some reason BitConverter interprets single byte as 2-byte digit.
-                Assert.AreEqual(BitConverter.GetBytes((short)ONE).Take(1), ONE.ToByteArray());
-                Assert.AreEqual(BitConverter.GetBytes(THOUSAND), THOUSAND.ToByteArray());
-                Assert.AreEqual(BitConverter.GetBytes(MILLION), MILLION.ToByteArray());
-                Assert.AreEqual(BitConverter.GetBytes(BILLION), BILLION.ToByteArray());
-                Assert.AreEqual(BitConverter.GetBytes(TRILLION), TRILLION.ToByteArray());
-
-                Assert.Throws<ArgumentException>(() => dictionary.ToByteArray());
-                Assert.Throws<ArgumentException>(() => dictionary.GetBytes());
-
-                Assert.That(() => ((object)null).GetBytes(), Has.Exactly(0).Items.Empty);
-                Assert.That(() => ((object)null).ToByteArray(), Has.Exactly(0).Items.Empty);
-
-                Assert.That(() => true.ToByteArray(), Has.Length.EqualTo(1).And.ItemAt(0).EqualTo(1));
-                Assert.That(() => false.ToByteArray(), Has.Length.EqualTo(1).And.ItemAt(0).EqualTo(0));
-
-                Assert.That(() => new ReadOnlySpan<byte>(new byte[] { }).GetString(), Has.Exactly(0).Items.Empty);
-                Assert.That(() => new ReadOnlySpan<byte>(new byte[] { 65, 65 }).GetString(), Has.All.EqualTo('A').And.Exactly(2).Items);
-
-
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToBoolean());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1}).ToBoolean());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToNullableBoolean());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] {1, 1 }).ToNullableBoolean());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableSingle(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableSingle());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToSingle());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt32(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToInt32());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableInt32());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt64(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToInt64());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableInt64());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableDouble(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToNullableDouble());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1 }).ToDouble());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt8(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToNullableInt8());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToInt8());
-
-                Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableInt16(), Is.EqualTo(null));
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1, 1 }).ToNullableInt16());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1, 1 }).ToInt16());
-
-            });
-        }
-
-        [Test]
-        public void Creating_A_Message_With_Null_Payload_And_Transport_Throws_Exception()
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<ArgumentNullException>(() => new DefaultTextMessage(new DefaultTextMessageHeaders(), null));
-                Assert.Throws<ArgumentNullException>(() => new DefaultTextMessage(null, new DefaultTextMessagePayload()));
-                Assert.DoesNotThrow(() => new DefaultTextMessage(new DefaultTextMessageHeaders(), new DefaultTextMessagePayload()));
-            });
         }
 
         [Test]
@@ -504,38 +530,6 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
             headers["test-header"] = @message;
             var result = headers["test-header"];
             Assert.AreSame(@message, result);
-        }
-
-
-        [Test]
-        public void Default_Headers_Serializer_Should_Not_Accept_Wrong_Types()
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<InvalidOperationException>(
-                    () => new DefaultHeadersSerializer().Deserialize(typeof(TestMessage), new MessageHeaderTransport()));
-
-                Assert.Throws<InvalidOperationException>(
-                    () => new DefaultHeadersSerializer().Deserialize(typeof(TestMessage), new MessageHeaderTransport()));
-
-            });
-        }
-
-        [Test]
-        public void Default_Payload_Serializer_Returns_Empty_Array_If_Payload_Is_Null()
-        {
-            var result = new DefaultPayloadSerializer().Serialize<TestMessagePayload>(null).ToArray();
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(result, Is.Not.Null);
-                Assert.That(result, Has.Exactly(2).Items.EqualTo(0));
-            });
-        }
-
-        [SetUp]
-        public void Setup()
-        {
         }
     }
 }

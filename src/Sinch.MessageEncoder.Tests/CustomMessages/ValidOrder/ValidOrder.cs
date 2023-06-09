@@ -1,7 +1,7 @@
 ﻿using Sinch.MessageEncoder.Attributes;
 using Sinch.MessageEncoder.Messages;
 
-namespace Sinch.MessageEncoder.Tests.CustomMessages.ValidOrder
+namespace Sinch.MessageEncoder.MessageBuilder.Tests.CustomMessages.ValidOrder
 {
     [MessageType(98)]
     internal class ValidOrderMessage : Message<ValidOrderHeader, ValidOrderPayload>

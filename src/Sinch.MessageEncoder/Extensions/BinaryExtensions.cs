@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sinch.MessageEncoder.Extensions
 {
-    public static class ObjectExtensions
+    public static class BinaryExtensions
     {
         public static IEnumerable<byte> GetBytes(this object data)
         {

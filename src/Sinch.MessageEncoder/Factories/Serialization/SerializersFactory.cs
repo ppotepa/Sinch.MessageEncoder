@@ -1,6 +1,6 @@
 ﻿using Sinch.MessageEncoder.Extensions;
 using Sinch.MessageEncoder.Messages;
-using Sinch.MessageEncoder.Serializers.Default;
+using Sinch.MessageEncoder.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
