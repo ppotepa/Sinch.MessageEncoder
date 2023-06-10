@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
-
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sinch.MessageEncoder.PoC\Sinch.MessageEncoder.PoC.csproj" />
+    <ProjectReference Include="..\..\Sinch.MessageEncoder\Sinch.MessageEncoder.csproj" />
   </ItemGroup>
 
 </Project>

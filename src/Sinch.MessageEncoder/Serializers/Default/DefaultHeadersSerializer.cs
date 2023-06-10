@@ -13,7 +13,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
     public class DefaultHeadersSerializer : IHeadersSerializer
     {
         private const int PropertyHeaderLength = 2;
-        private static readonly Dictionary<Type, SerializationMetadata[]> HeadersMetadata = default;
+        private static readonly Dictionary<Type, SerializationMetadata[]> HeadersMetadata;
 
         static DefaultHeadersSerializer()
         {
@@ -26,7 +26,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
         {
             int start = 0;
 
-            if (Activator.CreateInstance(headersType)! is MessageHeader headers)
+            if (Activator.CreateInstance(headersType) is MessageHeader headers)
             {
                 headers.Apply(headersTransport);
                 ReadOnlySpan<byte> headerBytes = headersTransport.ADDITIONAL_HEADERS_BYTES;

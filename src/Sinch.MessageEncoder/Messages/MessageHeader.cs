@@ -8,7 +8,7 @@ namespace Sinch.MessageEncoder.Messages
 {
     public abstract class MessageHeader : IBuildable
     {
-        internal readonly Dictionary<string, object> Headers = new Dictionary<string, object>();
+        internal readonly Dictionary<string, object> Headers = new();
 
         protected MessageHeader(params object[] headers)
         {

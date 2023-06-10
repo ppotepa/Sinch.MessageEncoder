@@ -12,41 +12,12 @@ namespace Sinch.MessageEncoder.PoC
 {
     internal class Program
     {
-        //private static Span<byte> ExtractFromFile(string filePath)
-        //{
-        //    using MemoryStream inMemoryCopy = new();
-
-        //    using (FileStream fileStream = File.OpenRead(filePath))
-        //    {
-        //        using DeflateStream decompressor = new(fileStream, CompressionMode.Decompress);
-        //        decompressor.CopyTo(inMemoryCopy);
-        //        inMemoryCopy.Position = 0;
-        //    }
-
-        //    Span<byte> span = new(new byte[inMemoryCopy.Length]);
-        //    _ = inMemoryCopy.Read(span);
-        //    inMemoryCopy.Dispose();
-        //    return span;
-        //}
-
         private static readonly Action Measure_1 = () =>
         {
             ReadOnlySpan<byte> binaryObject = GetBinaryObject();
-
             Message message = MessageFactory.Create(binaryObject);
             ReadOnlySpan<byte> serialized = MessageFactory.Serialize(message);
-
-            //var fromBinary = Message.FromBytes(serialized);
-            bool equal = serialized.SequenceEqual(binaryObject);
-
-            for (var i = 0; i < serialized.Length; i++)
-            {
-                if (serialized[i] != binaryObject[i])
-                {
-                    Console.WriteLine(new { index = i });
-                    Console.WriteLine($"s:{serialized[i]}, b:{binaryObject[i]}");
-                }
-            }
+            Console.WriteLine($"-------------------------------------");
         };
 
         private static readonly Action Measure_2 = () =>
@@ -63,18 +34,38 @@ namespace Sinch.MessageEncoder.PoC
 
                 Payload = new()
                 {
-                    TextMessageBody = "John"
+                    TextMessageBody = SHORT_STRING
                 }
             };
 
-            var payloadSerializer = SerializersFactory.CreateSerializer<IPayloadSerializer>(typeof(DefaultTextMessagePayload));
-            var headersSerializer = SerializersFactory.CreateSerializer<IHeadersSerializer>(typeof(DefaultTextMessageHeaders));
+            var res = Message.ToBinary(message);
+            _ = Message.FromBytes(res);
 
-            var result1 = payloadSerializer.Serialize(message.Payload);
-            var result2 = headersSerializer.Serialize(message.Headers);
+            _ = SerializersFactory.CreateSerializer<IPayloadSerializer>(typeof(DefaultTextMessagePayload));
+            _ = SerializersFactory.CreateSerializer<IHeadersSerializer>(typeof(DefaultTextMessageHeaders));
+
+            Console.WriteLine($"-------------------------------------");
         };
 
-        private static string LONG_STRING => string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 16)).Select(x => "A"));
+        private static string LONG_STRING
+        {
+            get
+            {
+                var str = string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 16)).Select(x => "A"));
+                Console.WriteLine(str.Length);
+                return str;
+            }
+        }
+
+        private static string SHORT_STRING
+        {
+            get
+            {
+                var str = string.Join("", Enumerable.Range(1, new Random().Next(1, 1024 * 1024 * 4)).Select(x => "A"));
+                Console.WriteLine(str.Length);
+                return str;
+            }
+        }
 
         private static ReadOnlySpan<byte> GetBinaryObject()
         {
@@ -87,7 +78,7 @@ namespace Sinch.MessageEncoder.PoC
                 .AddHeader("sender-name", "Anne")
                 .AddHeader("is-message-unread", true)
                 .EndHeaders()
-                .AddPayloadProperty(nameof(DefaultTextMessagePayload.TextMessageBody), "Test Message body")
+                .AddPayloadProperty(nameof(DefaultTextMessagePayload.TextMessageBody), LONG_STRING)
                 .GetBinary();
         }
 
@@ -95,23 +86,16 @@ namespace Sinch.MessageEncoder.PoC
         {
             var builder = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder();
 
-            var message = builder
-                .From(1)
-                .To(2)
-                .Timestamp(DateTime.Now.Ticks)
-                .MsgType(1)
-                .AddHeader("recipient-name", "Joe")
-                .AddHeader("sender-name", "Anne")
-                .AddHeader("is-message-unread", true)
-                .EndHeaders()
-                .AddPayloadProperty(nameof(DefaultTextMessagePayload.TextMessageBody), "Test Message body")
-                .Build();
+            var longStringMeasure = new DelegateStopwatch(Measure_1, Console.WriteLine);
+            var shortStringMeasure  = new DelegateStopwatch(Measure_2, Console.WriteLine);
+            
+            var executions =25;
 
-            //Span<byte> fromCompressedFileSpan = ExtractFromFile("testbinaries\\deflate.zlib");
-            var delegateStopWatch = new DelegateStopwatch(Measure_1, Console.WriteLine);
-            var executions = -1;
-            var average = delegateStopWatch.Execute(executions);
-            Console.WriteLine($"Average {average} ms. for {executions}");
+            var average1 = longStringMeasure.Execute(executions);
+            var average2 = shortStringMeasure .Execute(executions);
+
+            Console.WriteLine($"Average for {longStringMeasure} measure 1 {average1} ms. for {executions}");
+            Console.WriteLine($"Average for {shortStringMeasure} measure 2 {average2} ms. for {executions}");
         }
     }
 }

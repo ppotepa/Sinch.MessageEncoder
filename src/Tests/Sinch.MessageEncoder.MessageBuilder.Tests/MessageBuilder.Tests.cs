@@ -186,7 +186,7 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
 
                 Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToBoolean());
                 Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToBoolean());
-                Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { }).ToNullableBoolean());
+                Assert.That(() => new ReadOnlySpan<byte>(new byte[] { }).ToNullableBoolean(), Is.Null);
                 Assert.Throws<ArgumentException>(() => new ReadOnlySpan<byte>(new byte[] { 1, 1 }).ToNullableBoolean());
 
                 Assert.That(new ReadOnlySpan<byte>(new byte[] { }).ToNullableSingle(), Is.EqualTo(null));
@@ -334,7 +334,6 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
         [Test]
         public void MessageBuilder_Serializes_Basic_Headers_Correctly()
         {
-            //var binary = new BinaryMessageBuilder(1, 2, 1685193094, 1, 0).Serialize().ToArray();
             var binary = MessageBuilder<DefaultTextMessageHeaders, DefaultTextMessagePayload>.CreateBuilder()
                 .From(1)
                 .To(2)
@@ -519,6 +518,7 @@ namespace Sinch.MessageEncoder.MessageBuilder.Tests
         [SetUp]
         public void Setup()
         {
+            // intentionally left empty
         }
 
         [Test]

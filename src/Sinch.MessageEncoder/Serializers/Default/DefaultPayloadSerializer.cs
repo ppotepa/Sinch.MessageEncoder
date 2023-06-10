@@ -50,10 +50,7 @@ namespace Sinch.MessageEncoder.Serializers.Default
 
         private void DeserializeProperties(ReadOnlySpan<byte> payloadBytes, Payload payload)
         {
-            Dictionary<Type, object> map = new Dictionary<Type, object>();
-
             int start = 0;
-
             IEnumerable<SerializationMetadata> metadata = PayloadMetadata[payload.GetType()];
 
             foreach (SerializationMetadata data in metadata)
@@ -61,50 +58,33 @@ namespace Sinch.MessageEncoder.Serializers.Default
                 var currentPropertyLength = payloadBytes.Slice(start, PropertyHeaderLength).ToInt32();
                 var currentPropertyBytes = payloadBytes.Slice(start + PropertyHeaderLength, currentPropertyLength);
 
-                if (data.PropertyInfo.PropertyType == typeof(bool))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToBoolean());
-
-                if (data.PropertyInfo.PropertyType == typeof(bool?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableBoolean());
-
-                if (data.PropertyInfo.PropertyType == typeof(string))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.GetString());
-
-                if (data.PropertyInfo.PropertyType == typeof(long))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt64());
-
-                if (data.PropertyInfo.PropertyType == typeof(long?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt64());
-
-                if (data.PropertyInfo.PropertyType == typeof(int))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt32());
-
-                if (data.PropertyInfo.PropertyType == typeof(int?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt32());
-
-                if (data.PropertyInfo.PropertyType == typeof(short))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt16());
-
-                if (data.PropertyInfo.PropertyType == typeof(short?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt16());
-
-                if (data.PropertyInfo.PropertyType == typeof(byte))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt8());
-
-                if (data.PropertyInfo.PropertyType == typeof(byte?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt8());
-
-                if (data.PropertyInfo.PropertyType == typeof(float))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToSingle());
-
-                if (data.PropertyInfo.PropertyType == typeof(float?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableSingle());
-
-                if (data.PropertyInfo.PropertyType == typeof(double))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToDouble());
-
-                if (data.PropertyInfo.PropertyType == typeof(double?))
-                    data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableDouble());
+                if (data.IsNullable)
+                {
+                    switch (data.Preactivated)
+                    {
+                        case bool: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableBoolean()); break;
+                        case long: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt64()); break;
+                        case int: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt32()); break;
+                        case short: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt16()); break;
+                        case byte: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableInt8()); break;
+                        case float: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableSingle()); break;
+                        case double: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToNullableDouble()); break;
+                    }
+                }
+                else
+                {
+                    switch (data.Preactivated)
+                    {
+                        case bool: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToBoolean()); break;
+                        case long: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt64()); break;
+                        case int: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt32()); break;
+                        case short: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt16()); break;
+                        case byte: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToInt8()); break;
+                        case float: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToSingle()); break;
+                        case double: data.PropertyInfo.SetValue(payload, currentPropertyBytes.ToDouble()); break;
+                        case string: data.PropertyInfo.SetValue(payload, currentPropertyBytes.GetString()); break;
+                    }
+                }
 
                 start += PropertyHeaderLength + currentPropertyLength;
             }

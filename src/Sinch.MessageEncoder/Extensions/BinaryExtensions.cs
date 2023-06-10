@@ -48,6 +48,12 @@ namespace Sinch.MessageEncoder.Extensions
             throw new ArgumentException($"Required Span Length is 2");
         }
 
+        public static short ToInt16(this byte[] @object)
+        {
+            if (@object.Length is 2) return (short)(@object[0] | (@object[1] << 8));
+            throw new ArgumentException($"Required Span Length is 2");
+        }
+
         public static short? ToNullableInt16(this ReadOnlySpan<byte> @object)
         {
             if (@object.Length is 2) return (short)(@object[0] | (@object[1] << 8));
@@ -57,18 +63,30 @@ namespace Sinch.MessageEncoder.Extensions
 
         public static int ToInt32(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is 4) return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            if (@object.Length is 4) return @object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24);
+            throw new ArgumentException($"Required Span Length is 4");
+        }
+
+        public static int ToInt32(this byte[] @object)
+        {
+            if (@object.Length is 4) return @object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24);
             throw new ArgumentException($"Required Span Length is 4");
         }
 
         public static int? ToNullableInt32(this ReadOnlySpan<byte> @object)
         {
-            if (@object.Length is 4) return (int)(@object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24));
+            if (@object.Length is 4) return @object[0] | @object[1] << 8 | @object[2] << 16 | (@object[3] << 24);
             if (@object.Length is 0) return null;
             throw new ArgumentException($"Required Span Length is 4");
         }
 
         public static long ToInt64(this ReadOnlySpan<byte> @object)
+        {
+            if (@object.Length is 8) return BitConverter.ToInt64(@object);
+            throw new ArgumentException($"Required Span Length is 8");
+        }
+
+        public static long ToInt64(this byte[] @object)
         {
             if (@object.Length is 8) return BitConverter.ToInt64(@object);
             throw new ArgumentException($"Required Span Length is 8");
@@ -189,8 +207,12 @@ namespace Sinch.MessageEncoder.Extensions
 
         private static byte[] __toByteArrayString(this string @object)
         {
+            void Void() {
+                //this is void, intentionally left empty
+            }
+
             var bytes = new byte[@object.Length];
-            for (var index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) ;
+            for (var index = 0; index < @object.Length; bytes[index] = (byte)@object[index++]) Void();
             return bytes;
         }
     }

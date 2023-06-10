@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Sinch.MessageEncoder.Extensions
 {
-    internal class InvalidHeadersLengthException : Exception
+    public class InvalidHeadersLengthException : Exception
     {
         public InvalidHeadersLengthException(string message, Exception inner) : base(message, inner)
         {
-
         }
     }
 }
